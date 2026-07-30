@@ -1,0 +1,4351 @@
+openapi: 3.0.3
+info:
+  title: SisBanda API
+  version: 1.0.0
+  description: Documentación de la API del Sistema de Gestión de Banda Musical
+paths:
+  /api/abonos/:
+    get:
+      operationId: api_abonos_list
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/AbonoDeuda'
+          description: ''
+    post:
+      operationId: api_abonos_create
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AbonoDeuda'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/AbonoDeuda'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/AbonoDeuda'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AbonoDeuda'
+          description: ''
+  /api/abonos/{id}/:
+    get:
+      operationId: api_abonos_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Abono de Deuda.
+        required: true
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AbonoDeuda'
+          description: ''
+    put:
+      operationId: api_abonos_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Abono de Deuda.
+        required: true
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AbonoDeuda'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/AbonoDeuda'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/AbonoDeuda'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AbonoDeuda'
+          description: ''
+    patch:
+      operationId: api_abonos_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Abono de Deuda.
+        required: true
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedAbonoDeuda'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedAbonoDeuda'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedAbonoDeuda'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AbonoDeuda'
+          description: ''
+    delete:
+      operationId: api_abonos_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Abono de Deuda.
+        required: true
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/adelantos/:
+    get:
+      operationId: api_adelantos_list
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Adelanto'
+          description: ''
+    post:
+      operationId: api_adelantos_create
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Adelanto'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Adelanto'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Adelanto'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Adelanto'
+          description: ''
+  /api/adelantos/{id}/:
+    get:
+      operationId: api_adelantos_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Adelanto.
+        required: true
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Adelanto'
+          description: ''
+    put:
+      operationId: api_adelantos_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Adelanto.
+        required: true
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Adelanto'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Adelanto'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Adelanto'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Adelanto'
+          description: ''
+    patch:
+      operationId: api_adelantos_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Adelanto.
+        required: true
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedAdelanto'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedAdelanto'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedAdelanto'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Adelanto'
+          description: ''
+    delete:
+      operationId: api_adelantos_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Adelanto.
+        required: true
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/adelantos/registrar_app/:
+    post:
+      operationId: api_adelantos_registrar_app_create
+      description: |-
+        Registra múltiples adelantos desde la app móvil.
+        Delega toda la lógica de negocio a la capa de servicios.
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Adelanto'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Adelanto'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Adelanto'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Adelanto'
+          description: ''
+  /api/asistencias/:
+    get:
+      operationId: api_asistencias_list
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Asistencia'
+          description: ''
+    post:
+      operationId: api_asistencias_create
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Asistencia'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Asistencia'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Asistencia'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Asistencia'
+          description: ''
+  /api/asistencias/{id}/:
+    get:
+      operationId: api_asistencias_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Asistencia.
+        required: true
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Asistencia'
+          description: ''
+    put:
+      operationId: api_asistencias_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Asistencia.
+        required: true
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Asistencia'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Asistencia'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Asistencia'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Asistencia'
+          description: ''
+    patch:
+      operationId: api_asistencias_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Asistencia.
+        required: true
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedAsistencia'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedAsistencia'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedAsistencia'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Asistencia'
+          description: ''
+    delete:
+      operationId: api_asistencias_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Asistencia.
+        required: true
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/auth/me/:
+    get:
+      operationId: api_auth_me_retrieve
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          description: No response body
+  /api/auth/pin/:
+    post:
+      operationId: api_auth_pin_create
+      description: |-
+        Autentica a un usuario basado en un PIN de 4 dígitos o username/password.
+        - Para músicos: El PIN corresponde a los primeros 4 dígitos del documento de identidad.
+        - Para administradores: Usa username y password estándar.
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          description: No response body
+  /api/campanas-canaston/:
+    get:
+      operationId: api_campanas_canaston_list
+      description: |-
+        ViewSet para gestionar las campañas de canastones.
+        Permite al Directorio crear, ver y calcular campañas.
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/CampanaCanaston'
+          description: ''
+    post:
+      operationId: api_campanas_canaston_create
+      description: |-
+        ViewSet para gestionar las campañas de canastones.
+        Permite al Directorio crear, ver y calcular campañas.
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CampanaCanaston'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/CampanaCanaston'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/CampanaCanaston'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CampanaCanaston'
+          description: ''
+  /api/campanas-canaston/{id}/:
+    get:
+      operationId: api_campanas_canaston_retrieve
+      description: |-
+        ViewSet para gestionar las campañas de canastones.
+        Permite al Directorio crear, ver y calcular campañas.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Campaña de Canastón.
+        required: true
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CampanaCanaston'
+          description: ''
+    put:
+      operationId: api_campanas_canaston_update
+      description: |-
+        ViewSet para gestionar las campañas de canastones.
+        Permite al Directorio crear, ver y calcular campañas.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Campaña de Canastón.
+        required: true
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CampanaCanaston'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/CampanaCanaston'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/CampanaCanaston'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CampanaCanaston'
+          description: ''
+    patch:
+      operationId: api_campanas_canaston_partial_update
+      description: |-
+        ViewSet para gestionar las campañas de canastones.
+        Permite al Directorio crear, ver y calcular campañas.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Campaña de Canastón.
+        required: true
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedCampanaCanaston'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedCampanaCanaston'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedCampanaCanaston'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CampanaCanaston'
+          description: ''
+    delete:
+      operationId: api_campanas_canaston_destroy
+      description: |-
+        ViewSet para gestionar las campañas de canastones.
+        Permite al Directorio crear, ver y calcular campañas.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Campaña de Canastón.
+        required: true
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/campanas-canaston/{id}/calcular/:
+    post:
+      operationId: api_campanas_canaston_calcular_create
+      description: Dispara el cálculo de elegibilidad para una campaña específica.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Campaña de Canastón.
+        required: true
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CampanaCanaston'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/CampanaCanaston'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/CampanaCanaston'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CampanaCanaston'
+          description: ''
+  /api/campanas-canaston/{id}/resultados/:
+    get:
+      operationId: api_campanas_canaston_resultados_retrieve
+      description: |-
+        Devuelve los resultados detallados y agrupados de una campaña,
+        incluyendo un resumen de descuentos por sección.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Campaña de Canastón.
+        required: true
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CampanaCanaston'
+          description: ''
+  /api/configuracion/:
+    get:
+      operationId: api_configuracion_list
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ConfiguracionSistema'
+          description: ''
+    post:
+      operationId: api_configuracion_create
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ConfiguracionSistema'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ConfiguracionSistema'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ConfiguracionSistema'
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConfiguracionSistema'
+          description: ''
+  /api/configuracion/{id}/:
+    get:
+      operationId: api_configuracion_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Configuración del Sistema.
+        required: true
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConfiguracionSistema'
+          description: ''
+    put:
+      operationId: api_configuracion_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Configuración del Sistema.
+        required: true
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ConfiguracionSistema'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ConfiguracionSistema'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ConfiguracionSistema'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConfiguracionSistema'
+          description: ''
+    patch:
+      operationId: api_configuracion_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Configuración del Sistema.
+        required: true
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedConfiguracionSistema'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedConfiguracionSistema'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedConfiguracionSistema'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConfiguracionSistema'
+          description: ''
+    delete:
+      operationId: api_configuracion_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Configuración del Sistema.
+        required: true
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/contratos/:
+    get:
+      operationId: api_contratos_list
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ContratoMusico'
+          description: ''
+    post:
+      operationId: api_contratos_create
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ContratoMusico'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ContratoMusico'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ContratoMusico'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ContratoMusico'
+          description: ''
+  /api/contratos/{id}/:
+    get:
+      operationId: api_contratos_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Contrato de Músico.
+        required: true
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ContratoMusico'
+          description: ''
+    put:
+      operationId: api_contratos_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Contrato de Músico.
+        required: true
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ContratoMusico'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ContratoMusico'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ContratoMusico'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ContratoMusico'
+          description: ''
+    patch:
+      operationId: api_contratos_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Contrato de Músico.
+        required: true
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedContratoMusico'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedContratoMusico'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedContratoMusico'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ContratoMusico'
+          description: ''
+    delete:
+      operationId: api_contratos_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Contrato de Músico.
+        required: true
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/contratos/asignar_montos_personalizados/:
+    post:
+      operationId: api_contratos_asignar_montos_personalizados_create
+      description: |-
+        Permite al directorio asignar montos personalizados para un evento
+        Soporta montos variables por día
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ContratoMusico'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ContratoMusico'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ContratoMusico'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ContratoMusico'
+          description: ''
+  /api/contratos/asignar_montos_variables/:
+    post:
+      operationId: api_contratos_asignar_montos_variables_create
+      description: Asigna montos variables para músicos en diferentes fechas de un
+        mismo evento
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ContratoMusico'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ContratoMusico'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ContratoMusico'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ContratoMusico'
+          description: ''
+  /api/dashboard/:
+    get:
+      operationId: api_dashboard_retrieve
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          description: No response body
+  /api/descuentos/:
+    get:
+      operationId: api_descuentos_list
+      description: |-
+        API endpoint para gestionar los descuentos (sanciones) de los músicos.
+        Permite crear, leer, actualizar y eliminar descuentos.
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Descuento'
+          description: ''
+    post:
+      operationId: api_descuentos_create
+      description: |-
+        API endpoint para gestionar los descuentos (sanciones) de los músicos.
+        Permite crear, leer, actualizar y eliminar descuentos.
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Descuento'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Descuento'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Descuento'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Descuento'
+          description: ''
+  /api/descuentos/{id}/:
+    get:
+      operationId: api_descuentos_retrieve
+      description: |-
+        API endpoint para gestionar los descuentos (sanciones) de los músicos.
+        Permite crear, leer, actualizar y eliminar descuentos.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+        required: true
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Descuento'
+          description: ''
+    put:
+      operationId: api_descuentos_update
+      description: |-
+        API endpoint para gestionar los descuentos (sanciones) de los músicos.
+        Permite crear, leer, actualizar y eliminar descuentos.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+        required: true
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Descuento'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Descuento'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Descuento'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Descuento'
+          description: ''
+    patch:
+      operationId: api_descuentos_partial_update
+      description: |-
+        API endpoint para gestionar los descuentos (sanciones) de los músicos.
+        Permite crear, leer, actualizar y eliminar descuentos.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+        required: true
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedDescuento'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedDescuento'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedDescuento'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Descuento'
+          description: ''
+    delete:
+      operationId: api_descuentos_destroy
+      description: |-
+        API endpoint para gestionar los descuentos (sanciones) de los músicos.
+        Permite crear, leer, actualizar y eliminar descuentos.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+        required: true
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/descuentos/bulk_seccion/:
+    post:
+      operationId: api_descuentos_bulk_seccion_create
+      description: |-
+        Crea un lote de descuentos para una sección en un evento específico.
+        Delega la lógica de negocio a la capa de servicios para mayor modularidad.
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Descuento'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Descuento'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Descuento'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Descuento'
+          description: ''
+  /api/deudas/:
+    get:
+      operationId: api_deudas_list
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Deuda'
+          description: ''
+    post:
+      operationId: api_deudas_create
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Deuda'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Deuda'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Deuda'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Deuda'
+          description: ''
+  /api/deudas/{id}/:
+    get:
+      operationId: api_deudas_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Deuda/Financiamiento.
+        required: true
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Deuda'
+          description: ''
+    put:
+      operationId: api_deudas_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Deuda/Financiamiento.
+        required: true
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Deuda'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Deuda'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Deuda'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Deuda'
+          description: ''
+    patch:
+      operationId: api_deudas_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Deuda/Financiamiento.
+        required: true
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedDeuda'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedDeuda'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedDeuda'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Deuda'
+          description: ''
+    delete:
+      operationId: api_deudas_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Deuda/Financiamiento.
+        required: true
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/deudas/crear_masivo/:
+    post:
+      operationId: api_deudas_crear_masivo_create
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Deuda'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Deuda'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Deuda'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Deuda'
+          description: ''
+  /api/eventos/:
+    get:
+      operationId: api_eventos_list
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Evento'
+          description: ''
+    post:
+      operationId: api_eventos_create
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Evento'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Evento'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Evento'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Evento'
+          description: ''
+  /api/eventos/{id}/:
+    get:
+      operationId: api_eventos_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Evento.
+        required: true
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Evento'
+          description: ''
+    put:
+      operationId: api_eventos_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Evento.
+        required: true
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Evento'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Evento'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Evento'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Evento'
+          description: ''
+    patch:
+      operationId: api_eventos_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Evento.
+        required: true
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedEvento'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedEvento'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedEvento'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Evento'
+          description: ''
+    delete:
+      operationId: api_eventos_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Evento.
+        required: true
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/eventos/{id}/generar_mensaje/:
+    get:
+      operationId: api_eventos_generar_mensaje_retrieve
+      description: Solo DIRECTOR, SUBDIRECTOR y PRESIDENTE pueden generar mensajes
+        de WhatsApp
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Evento.
+        required: true
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Evento'
+          description: ''
+  /api/eventos/{id}/generar_pagos/:
+    post:
+      operationId: api_eventos_generar_pagos_create
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Evento.
+        required: true
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Evento'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Evento'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Evento'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Evento'
+          description: ''
+  /api/eventos/{id}/registrar_asistencia/:
+    post:
+      operationId: api_eventos_registrar_asistencia_create
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Evento.
+        required: true
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Evento'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Evento'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Evento'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Evento'
+          description: ''
+  /api/jefes-seccion/:
+    get:
+      operationId: api_jefes_seccion_list
+      description: ViewSet para gestionar jefes de sección
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/JefeSeccion'
+          description: ''
+    post:
+      operationId: api_jefes_seccion_create
+      description: ViewSet para gestionar jefes de sección
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/JefeSeccion'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/JefeSeccion'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/JefeSeccion'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JefeSeccion'
+          description: ''
+  /api/jefes-seccion/{id}/:
+    get:
+      operationId: api_jefes_seccion_retrieve
+      description: ViewSet para gestionar jefes de sección
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Jefe de Sección.
+        required: true
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JefeSeccion'
+          description: ''
+    put:
+      operationId: api_jefes_seccion_update
+      description: ViewSet para gestionar jefes de sección
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Jefe de Sección.
+        required: true
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/JefeSeccion'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/JefeSeccion'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/JefeSeccion'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JefeSeccion'
+          description: ''
+    patch:
+      operationId: api_jefes_seccion_partial_update
+      description: ViewSet para gestionar jefes de sección
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Jefe de Sección.
+        required: true
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedJefeSeccion'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedJefeSeccion'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedJefeSeccion'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JefeSeccion'
+          description: ''
+    delete:
+      operationId: api_jefes_seccion_destroy
+      description: ViewSet para gestionar jefes de sección
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Jefe de Sección.
+        required: true
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/jefes-seccion/por_seccion/:
+    get:
+      operationId: api_jefes_seccion_por_seccion_retrieve
+      description: Retorna los jefes activos agrupados por sección
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JefeSeccion'
+          description: ''
+  /api/musicos/:
+    get:
+      operationId: api_musicos_list
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Musico'
+          description: ''
+    post:
+      operationId: api_musicos_create
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Musico'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Musico'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Musico'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Musico'
+          description: ''
+  /api/musicos/{id}/:
+    get:
+      operationId: api_musicos_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Músico.
+        required: true
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Musico'
+          description: ''
+    put:
+      operationId: api_musicos_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Músico.
+        required: true
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Musico'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Musico'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Musico'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Musico'
+          description: ''
+    patch:
+      operationId: api_musicos_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Músico.
+        required: true
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedMusico'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedMusico'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedMusico'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Musico'
+          description: ''
+    delete:
+      operationId: api_musicos_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Músico.
+        required: true
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/musicos/generar_plantilla_excel/:
+    get:
+      operationId: api_musicos_generar_plantilla_excel_retrieve
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Musico'
+          description: ''
+  /api/musicos/reporte/:
+    get:
+      operationId: api_musicos_reporte_retrieve
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Musico'
+          description: ''
+  /api/musicos/update_order/:
+    post:
+      operationId: api_musicos_update_order_create
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Musico'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Musico'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Musico'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Musico'
+          description: ''
+  /api/pagos/:
+    get:
+      operationId: api_pagos_list
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Pago'
+          description: ''
+    post:
+      operationId: api_pagos_create
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Pago'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Pago'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Pago'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Pago'
+          description: ''
+  /api/pagos/{id}/:
+    get:
+      operationId: api_pagos_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Pago.
+        required: true
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Pago'
+          description: ''
+    put:
+      operationId: api_pagos_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Pago.
+        required: true
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Pago'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Pago'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Pago'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Pago'
+          description: ''
+    patch:
+      operationId: api_pagos_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Pago.
+        required: true
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedPago'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedPago'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedPago'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Pago'
+          description: ''
+    delete:
+      operationId: api_pagos_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Pago.
+        required: true
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/planillas/:
+    get:
+      operationId: api_planillas_list
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PlanillaLiquidacion'
+          description: ''
+    post:
+      operationId: api_planillas_create
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PlanillaLiquidacion'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PlanillaLiquidacion'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PlanillaLiquidacion'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PlanillaLiquidacion'
+          description: ''
+  /api/planillas/{id}/:
+    get:
+      operationId: api_planillas_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Planilla de Liquidación.
+        required: true
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PlanillaLiquidacionDetalle'
+          description: ''
+    put:
+      operationId: api_planillas_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Planilla de Liquidación.
+        required: true
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PlanillaLiquidacion'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PlanillaLiquidacion'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PlanillaLiquidacion'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PlanillaLiquidacion'
+          description: ''
+    patch:
+      operationId: api_planillas_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Planilla de Liquidación.
+        required: true
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedPlanillaLiquidacion'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedPlanillaLiquidacion'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedPlanillaLiquidacion'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PlanillaLiquidacion'
+          description: ''
+    delete:
+      operationId: api_planillas_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Planilla de Liquidación.
+        required: true
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/planillas/{id}/generar_pdf/:
+    get:
+      operationId: api_planillas_generar_pdf_retrieve
+      description: Genera un PDF detallado de la planilla de liquidación.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Planilla de Liquidación.
+        required: true
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PlanillaLiquidacion'
+          description: ''
+  /api/planillas/liquidar_app/:
+    post:
+      operationId: api_planillas_liquidar_app_create
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PlanillaLiquidacion'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PlanillaLiquidacion'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PlanillaLiquidacion'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PlanillaLiquidacion'
+          description: ''
+  /api/planillas/liquidar_directo/:
+    post:
+      operationId: api_planillas_liquidar_directo_create
+      description: |-
+        Liquida un evento directamente desde una tabla editable donde el usuario introduce
+        los montos totales acordados, multas y adelantos manualmente o desde PDF.
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PlanillaLiquidacion'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PlanillaLiquidacion'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PlanillaLiquidacion'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PlanillaLiquidacion'
+          description: ''
+  /api/planillas/previsualizar/:
+    post:
+      operationId: api_planillas_previsualizar_create
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PlanillaLiquidacion'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PlanillaLiquidacion'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PlanillaLiquidacion'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PlanillaLiquidacion'
+          description: ''
+  /api/planillas/reporte_general/:
+    get:
+      operationId: api_planillas_reporte_general_retrieve
+      description: Genera un PDF con el reporte general de finanzas.
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PlanillaLiquidacion'
+          description: ''
+  /api/planillas/simular/:
+    get:
+      operationId: api_planillas_simular_retrieve
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PlanillaLiquidacion'
+          description: ''
+  /api/planillas/update_order/:
+    post:
+      operationId: api_planillas_update_order_create
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PlanillaLiquidacion'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PlanillaLiquidacion'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PlanillaLiquidacion'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PlanillaLiquidacion'
+          description: ''
+  /api/ranking/:
+    get:
+      operationId: api_ranking_retrieve
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          description: No response body
+  /api/resultados-canaston/:
+    get:
+      operationId: api_resultados_canaston_list
+      description: ViewSet para ver los resultados del canastón y marcar como entregado.
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ResultadoCanaston'
+          description: ''
+  /api/resultados-canaston/{id}/:
+    get:
+      operationId: api_resultados_canaston_retrieve
+      description: ViewSet para ver los resultados del canastón y marcar como entregado.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Resultado de Canastón.
+        required: true
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResultadoCanaston'
+          description: ''
+  /api/resultados-canaston/{id}/marcar-entregado/:
+    patch:
+      operationId: api_resultados_canaston_marcar_entregado_partial_update
+      description: Marca un canastón como entregado.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Resultado de Canastón.
+        required: true
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedResultadoCanaston'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedResultadoCanaston'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedResultadoCanaston'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResultadoCanaston'
+          description: ''
+  /api/token/:
+    post:
+      operationId: api_token_create
+      description: |-
+        Takes a set of user credentials and returns an access and refresh JSON web
+        token pair to prove the authentication of those credentials.
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TokenObtainPair'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/TokenObtainPair'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/TokenObtainPair'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenObtainPair'
+          description: ''
+  /api/token/refresh/:
+    post:
+      operationId: api_token_refresh_create
+      description: |-
+        Takes a refresh type JSON web token and returns an access type JSON web
+        token if the refresh token is valid.
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TokenRefresh'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/TokenRefresh'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/TokenRefresh'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenRefresh'
+          description: ''
+  /api/usuarios/:
+    get:
+      operationId: api_usuarios_list
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Usuario'
+          description: ''
+    post:
+      operationId: api_usuarios_create
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UsuarioCreate'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/UsuarioCreate'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/UsuarioCreate'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsuarioCreate'
+          description: ''
+  /api/usuarios/{id}/:
+    get:
+      operationId: api_usuarios_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Usuario.
+        required: true
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Usuario'
+          description: ''
+    put:
+      operationId: api_usuarios_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Usuario.
+        required: true
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UsuarioCreate'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/UsuarioCreate'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/UsuarioCreate'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsuarioCreate'
+          description: ''
+    patch:
+      operationId: api_usuarios_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Usuario.
+        required: true
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedUsuarioCreate'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedUsuarioCreate'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedUsuarioCreate'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsuarioCreate'
+          description: ''
+    delete:
+      operationId: api_usuarios_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Usuario.
+        required: true
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/usuarios/generar_plantilla_excel/:
+    get:
+      operationId: api_usuarios_generar_plantilla_excel_retrieve
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Usuario'
+          description: ''
+  /api/usuarios/update_order/:
+    post:
+      operationId: api_usuarios_update_order_create
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Usuario'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Usuario'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Usuario'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Usuario'
+          description: ''
+components:
+  schemas:
+    AbonoDeuda:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        deuda_motivo:
+          type: string
+          readOnly: true
+        musico_nombre:
+          type: string
+          readOnly: true
+        monto:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+        fecha:
+          type: string
+          format: date
+        deuda:
+          type: integer
+        planilla:
+          type: integer
+          nullable: true
+      required:
+      - deuda
+      - deuda_motivo
+      - id
+      - monto
+      - musico_nombre
+    Adelanto:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        musico_nombre:
+          type: string
+          readOnly: true
+        monto:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+        motivo:
+          type: string
+          maxLength: 200
+        fecha:
+          type: string
+          format: date
+        origen:
+          $ref: '#/components/schemas/OrigenEnum'
+        estado:
+          $ref: '#/components/schemas/Estado735Enum'
+        creado_en:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+        musico:
+          type: integer
+        contrato:
+          type: integer
+          nullable: true
+        registrado_por:
+          type: integer
+          nullable: true
+      required:
+      - creado_en
+      - id
+      - monto
+      - motivo
+      - musico
+      - musico_nombre
+    Asistencia:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        musico_nombre:
+          type: string
+          readOnly: true
+        evento_titulo:
+          type: string
+          readOnly: true
+        estado:
+          $ref: '#/components/schemas/AsistenciaEstadoEnum'
+        hora_llegada:
+          type: string
+          format: time
+          nullable: true
+        observaciones:
+          type: string
+        fecha_asistencia:
+          type: string
+          format: date
+          description: Fecha específica de asistencia (para eventos multi-día)
+        monto_acordado:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+          description: Pago asignado por el directorio para este día específico
+        liquidado:
+          type: boolean
+          description: Indica si este día ya fue pagado
+        musico:
+          type: integer
+        evento:
+          type: integer
+        contrato:
+          type: integer
+          nullable: true
+          description: Contrato personalizado para este evento
+      required:
+      - evento
+      - evento_titulo
+      - id
+      - musico
+      - musico_nombre
+    AsistenciaEstadoEnum:
+      enum:
+      - PRESENTE
+      - TARDANZA
+      - AUSENTE
+      - JUSTIFICADO
+      type: string
+      description: |-
+        * `PRESENTE` - Presente
+        * `TARDANZA` - Tardanza
+        * `AUSENTE` - Ausente
+        * `JUSTIFICADO` - Justificado
+    CampanaCanaston:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        titulo:
+          type: string
+          maxLength: 200
+        fecha_inicio_calculo:
+          type: string
+          format: date
+          description: Fecha inicio para cálculo de rendimiento
+        fecha_fin_calculo:
+          type: string
+          format: date
+          description: Fecha fin para cálculo de rendimiento
+        fecha_entrega:
+          type: string
+          format: date
+          nullable: true
+          description: Fecha prevista para entrega de canastones
+        estado:
+          $ref: '#/components/schemas/CampanaCanastonEstadoEnum'
+        observaciones:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+      required:
+      - created_at
+      - fecha_fin_calculo
+      - fecha_inicio_calculo
+      - id
+      - titulo
+    CampanaCanastonEstadoEnum:
+      enum:
+      - ABIERTO
+      - CERRADO
+      type: string
+      description: |-
+        * `ABIERTO` - Abierto
+        * `CERRADO` - Cerrado
+    ConfiguracionSistema:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        nombre_banda:
+          type: string
+          maxLength: 200
+        monto_por_evento:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+        hora_limite_tardanza:
+          type: string
+          format: time
+        email_director:
+          type: string
+          format: email
+          maxLength: 254
+        telefono_contacto:
+          type: string
+          maxLength: 20
+      required:
+      - id
+    ContratoMusico:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        musico_nombre:
+          type: string
+          readOnly: true
+        evento_titulo:
+          type: string
+          readOnly: true
+        aprobado_por_nombre:
+          type: string
+          readOnly: true
+        monto_total_calculado:
+          type: string
+          readOnly: true
+        monto_diario:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+          title: Monto Diario Base
+          description: Monto base por día para este músico en este evento
+        fecha_aprobacion:
+          type: string
+          format: date-time
+          nullable: true
+        observaciones:
+          type: string
+          description: Motivo de la asignación personalizada
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+        musico:
+          type: integer
+        evento:
+          type: integer
+        aprobado_por:
+          type: integer
+          nullable: true
+          description: Director/Subdirector que aprobó este contrato
+        detalles_diarios:
+          type: array
+          items:
+            $ref: '#/components/schemas/DetalleMontoDiario'
+          readOnly: true
+      required:
+      - aprobado_por_nombre
+      - created_at
+      - detalles_diarios
+      - evento
+      - evento_titulo
+      - id
+      - monto_diario
+      - monto_total_calculado
+      - musico
+      - musico_nombre
+    Descuento:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        musico_nombre:
+          type: string
+          readOnly: true
+        monto:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+        motivo:
+          type: string
+          description: Descripción detallada de la falta
+        fecha_falta:
+          type: string
+          format: date
+          nullable: true
+        origen:
+          $ref: '#/components/schemas/OrigenEnum'
+        estado:
+          $ref: '#/components/schemas/Estado735Enum'
+        creado_en:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+        musico:
+          type: integer
+        jefe_seccion:
+          type: integer
+          nullable: true
+      required:
+      - creado_en
+      - id
+      - monto
+      - motivo
+      - musico
+      - musico_nombre
+    DetalleMontoDiario:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        musico_nombre:
+          type: string
+          readOnly: true
+        evento_titulo:
+          type: string
+          readOnly: true
+        aprobado_por_nombre:
+          type: string
+          readOnly: true
+        fecha:
+          type: string
+          format: date
+          description: Fecha específica del evento
+        monto_asignado:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+          description: Monto específico para esta fecha
+        motivo_variacion:
+          type: string
+          description: Motivo de la variación del monto
+        fecha_aprobacion:
+          type: string
+          format: date-time
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+        contrato:
+          type: integer
+        aprobado_por:
+          type: integer
+          nullable: true
+      required:
+      - aprobado_por_nombre
+      - contrato
+      - created_at
+      - evento_titulo
+      - fecha
+      - id
+      - monto_asignado
+      - musico_nombre
+    Deuda:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        musico_nombre:
+          type: string
+          readOnly: true
+        saldo_restante:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+          readOnly: true
+        motivo:
+          type: string
+          maxLength: 200
+        monto_total:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+        monto_pagado:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+        fecha_creacion:
+          type: string
+          format: date
+        estado:
+          $ref: '#/components/schemas/DeudaEstadoEnum'
+        observaciones:
+          type: string
+        musico:
+          type: integer
+      required:
+      - id
+      - monto_total
+      - motivo
+      - musico
+      - musico_nombre
+      - saldo_restante
+    DeudaEstadoEnum:
+      enum:
+      - PENDIENTE
+      - PAGADA
+      type: string
+      description: |-
+        * `PENDIENTE` - Pendiente
+        * `PAGADA` - Pagada
+    Estado735Enum:
+      enum:
+      - APROBADA
+      - LIQUIDADA
+      type: string
+      description: |-
+        * `APROBADA` - Aprobada
+        * `LIQUIDADA` - Liquidada en Pago
+    EstadoEntregaEnum:
+      enum:
+      - PENDIENTE
+      - ENTREGADO
+      - NO_ELEGIBLE
+      type: string
+      description: |-
+        * `PENDIENTE` - Pendiente de Entrega
+        * `ENTREGADO` - Entregado
+        * `NO_ELEGIBLE` - No Elegible
+    Evento:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        asistencias:
+          type: array
+          items:
+            $ref: '#/components/schemas/Asistencia'
+          readOnly: true
+        titulo:
+          type: string
+          maxLength: 200
+        uniforme:
+          $ref: '#/components/schemas/UniformeEnum'
+        uniforme_personalizado:
+          type: string
+          description: Especificar si elige 'Otro'
+          maxLength: 300
+        fecha_hora_cita:
+          type: string
+          format: date-time
+          title: Fecha y hora de cita
+        lugar_concentracion:
+          type: string
+          maxLength: 300
+        detalles_uniforme:
+          type: string
+          description: Descripción escrita del uniforme
+        responsable:
+          $ref: '#/components/schemas/ResponsableEnum'
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+        convocados:
+          type: array
+          items:
+            type: integer
+      required:
+      - asistencias
+      - created_at
+      - id
+      - titulo
+    InstrumentoEnum:
+      enum:
+      - TROMPETA
+      - TROMBON
+      - SAXOFON
+      - CLARINETE
+      - FLAUTA
+      - TUBA
+      - BARITONO
+      - BOMBO
+      - TAMBOR
+      - PLATILLOS
+      - PERCUSION
+      - OTRO
+      type: string
+      description: |-
+        * `TROMPETA` - Trompeta
+        * `TROMBON` - Trombón
+        * `SAXOFON` - Saxofón
+        * `CLARINETE` - Clarinete
+        * `FLAUTA` - Flauta
+        * `TUBA` - Tuba
+        * `BARITONO` - Barítono
+        * `BOMBO` - Bombo
+        * `TAMBOR` - Tambor
+        * `PLATILLOS` - Platillos
+        * `PERCUSION` - Percusión General
+        * `OTRO` - Otro
+    JefeSeccion:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        musico_nombre:
+          type: string
+          readOnly: true
+        seccion_display:
+          type: string
+          readOnly: true
+        seccion:
+          $ref: '#/components/schemas/SeccionEnum'
+        activo:
+          type: boolean
+        fecha_nombramiento:
+          type: string
+          format: date
+        musico:
+          type: integer
+      required:
+      - id
+      - musico
+      - musico_nombre
+      - seccion
+      - seccion_display
+    Musico:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        usuario:
+          allOf:
+          - $ref: '#/components/schemas/Usuario'
+          readOnly: true
+        documento_identidad:
+          type: string
+          nullable: true
+          title: Documento de Identidad
+          pattern: ^[0-9-]+$
+          maxLength: 20
+        nombres:
+          type: string
+          maxLength: 100
+        apellidos:
+          type: string
+          maxLength: 100
+        telefono:
+          type: string
+          title: Teléfono
+          maxLength: 20
+        direccion:
+          type: string
+        talla_camisa:
+          type: string
+          maxLength: 10
+        talla_chamarra:
+          type: string
+          maxLength: 10
+        numero_calzado:
+          type: string
+          maxLength: 10
+        instrumento:
+          $ref: '#/components/schemas/InstrumentoEnum'
+        nivel:
+          $ref: '#/components/schemas/NivelEnum'
+        fecha_nacimiento:
+          type: string
+          format: date
+          nullable: true
+          title: Fecha de Nacimiento
+        foto_perfil:
+          type: string
+          format: uri
+          nullable: true
+          title: Foto de Perfil
+        orden:
+          type: integer
+        activo:
+          type: boolean
+        created_at:
+          type: string
+          format: date-time
+          title: Fecha de Registro
+        rendimiento:
+          allOf:
+          - $ref: '#/components/schemas/Rendimiento'
+          readOnly: true
+        nombre_completo:
+          type: string
+          readOnly: true
+      required:
+      - apellidos
+      - id
+      - instrumento
+      - nombre_completo
+      - nombres
+      - rendimiento
+      - usuario
+    NivelEnum:
+      enum:
+      - PRINCIPIANTE
+      - INTERMEDIO
+      - AVANZADO
+      - MAESTRO
+      type: string
+      description: |-
+        * `PRINCIPIANTE` - Principiante
+        * `INTERMEDIO` - Intermedio
+        * `AVANZADO` - Avanzado
+        * `MAESTRO` - Maestro
+    OrigenEnum:
+      enum:
+      - APP_MOVIL
+      - FRONTEND
+      type: string
+      description: |-
+        * `APP_MOVIL` - App Móvil
+        * `FRONTEND` - Frontend
+    Pago:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        musico_nombre:
+          type: string
+          readOnly: true
+        planilla_titulo:
+          type: string
+          readOnly: true
+        salario_base:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+        descuentos_totales:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+          description: Suma de descuentos aprobados
+        adelantos_totales:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+          description: Suma de adelantos (deudas) aprobados
+        neto_pagar:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+          description: salario_base - descuentos_totales - adelantos_totales
+        estado:
+          $ref: '#/components/schemas/PagoEstadoEnum'
+        fecha_liquidacion:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+        pagado_en:
+          type: string
+          format: date-time
+          nullable: true
+        observaciones:
+          type: string
+        musico:
+          type: integer
+        planilla:
+          type: integer
+          nullable: true
+      required:
+      - fecha_liquidacion
+      - id
+      - musico
+      - musico_nombre
+      - planilla_titulo
+    PagoEstadoEnum:
+      enum:
+      - PENDIENTE
+      - PAGADO
+      type: string
+      description: |-
+        * `PENDIENTE` - Pendiente
+        * `PAGADO` - Pagado
+    PatchedAbonoDeuda:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        deuda_motivo:
+          type: string
+          readOnly: true
+        musico_nombre:
+          type: string
+          readOnly: true
+        monto:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+        fecha:
+          type: string
+          format: date
+        deuda:
+          type: integer
+        planilla:
+          type: integer
+          nullable: true
+    PatchedAdelanto:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        musico_nombre:
+          type: string
+          readOnly: true
+        monto:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+        motivo:
+          type: string
+          maxLength: 200
+        fecha:
+          type: string
+          format: date
+        origen:
+          $ref: '#/components/schemas/OrigenEnum'
+        estado:
+          $ref: '#/components/schemas/Estado735Enum'
+        creado_en:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+        musico:
+          type: integer
+        contrato:
+          type: integer
+          nullable: true
+        registrado_por:
+          type: integer
+          nullable: true
+    PatchedAsistencia:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        musico_nombre:
+          type: string
+          readOnly: true
+        evento_titulo:
+          type: string
+          readOnly: true
+        estado:
+          $ref: '#/components/schemas/AsistenciaEstadoEnum'
+        hora_llegada:
+          type: string
+          format: time
+          nullable: true
+        observaciones:
+          type: string
+        fecha_asistencia:
+          type: string
+          format: date
+          description: Fecha específica de asistencia (para eventos multi-día)
+        monto_acordado:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+          description: Pago asignado por el directorio para este día específico
+        liquidado:
+          type: boolean
+          description: Indica si este día ya fue pagado
+        musico:
+          type: integer
+        evento:
+          type: integer
+        contrato:
+          type: integer
+          nullable: true
+          description: Contrato personalizado para este evento
+    PatchedCampanaCanaston:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        titulo:
+          type: string
+          maxLength: 200
+        fecha_inicio_calculo:
+          type: string
+          format: date
+          description: Fecha inicio para cálculo de rendimiento
+        fecha_fin_calculo:
+          type: string
+          format: date
+          description: Fecha fin para cálculo de rendimiento
+        fecha_entrega:
+          type: string
+          format: date
+          nullable: true
+          description: Fecha prevista para entrega de canastones
+        estado:
+          $ref: '#/components/schemas/CampanaCanastonEstadoEnum'
+        observaciones:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+    PatchedConfiguracionSistema:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        nombre_banda:
+          type: string
+          maxLength: 200
+        monto_por_evento:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+        hora_limite_tardanza:
+          type: string
+          format: time
+        email_director:
+          type: string
+          format: email
+          maxLength: 254
+        telefono_contacto:
+          type: string
+          maxLength: 20
+    PatchedContratoMusico:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        musico_nombre:
+          type: string
+          readOnly: true
+        evento_titulo:
+          type: string
+          readOnly: true
+        aprobado_por_nombre:
+          type: string
+          readOnly: true
+        monto_total_calculado:
+          type: string
+          readOnly: true
+        monto_diario:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+          title: Monto Diario Base
+          description: Monto base por día para este músico en este evento
+        fecha_aprobacion:
+          type: string
+          format: date-time
+          nullable: true
+        observaciones:
+          type: string
+          description: Motivo de la asignación personalizada
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+        musico:
+          type: integer
+        evento:
+          type: integer
+        aprobado_por:
+          type: integer
+          nullable: true
+          description: Director/Subdirector que aprobó este contrato
+        detalles_diarios:
+          type: array
+          items:
+            $ref: '#/components/schemas/DetalleMontoDiario'
+          readOnly: true
+    PatchedDescuento:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        musico_nombre:
+          type: string
+          readOnly: true
+        monto:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+        motivo:
+          type: string
+          description: Descripción detallada de la falta
+        fecha_falta:
+          type: string
+          format: date
+          nullable: true
+        origen:
+          $ref: '#/components/schemas/OrigenEnum'
+        estado:
+          $ref: '#/components/schemas/Estado735Enum'
+        creado_en:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+        musico:
+          type: integer
+        jefe_seccion:
+          type: integer
+          nullable: true
+    PatchedDeuda:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        musico_nombre:
+          type: string
+          readOnly: true
+        saldo_restante:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+          readOnly: true
+        motivo:
+          type: string
+          maxLength: 200
+        monto_total:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+        monto_pagado:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+        fecha_creacion:
+          type: string
+          format: date
+        estado:
+          $ref: '#/components/schemas/DeudaEstadoEnum'
+        observaciones:
+          type: string
+        musico:
+          type: integer
+    PatchedEvento:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        asistencias:
+          type: array
+          items:
+            $ref: '#/components/schemas/Asistencia'
+          readOnly: true
+        titulo:
+          type: string
+          maxLength: 200
+        uniforme:
+          $ref: '#/components/schemas/UniformeEnum'
+        uniforme_personalizado:
+          type: string
+          description: Especificar si elige 'Otro'
+          maxLength: 300
+        fecha_hora_cita:
+          type: string
+          format: date-time
+          title: Fecha y hora de cita
+        lugar_concentracion:
+          type: string
+          maxLength: 300
+        detalles_uniforme:
+          type: string
+          description: Descripción escrita del uniforme
+        responsable:
+          $ref: '#/components/schemas/ResponsableEnum'
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+        convocados:
+          type: array
+          items:
+            type: integer
+    PatchedJefeSeccion:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        musico_nombre:
+          type: string
+          readOnly: true
+        seccion_display:
+          type: string
+          readOnly: true
+        seccion:
+          $ref: '#/components/schemas/SeccionEnum'
+        activo:
+          type: boolean
+        fecha_nombramiento:
+          type: string
+          format: date
+        musico:
+          type: integer
+    PatchedMusico:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        usuario:
+          allOf:
+          - $ref: '#/components/schemas/Usuario'
+          readOnly: true
+        documento_identidad:
+          type: string
+          nullable: true
+          title: Documento de Identidad
+          pattern: ^[0-9-]+$
+          maxLength: 20
+        nombres:
+          type: string
+          maxLength: 100
+        apellidos:
+          type: string
+          maxLength: 100
+        telefono:
+          type: string
+          title: Teléfono
+          maxLength: 20
+        direccion:
+          type: string
+        talla_camisa:
+          type: string
+          maxLength: 10
+        talla_chamarra:
+          type: string
+          maxLength: 10
+        numero_calzado:
+          type: string
+          maxLength: 10
+        instrumento:
+          $ref: '#/components/schemas/InstrumentoEnum'
+        nivel:
+          $ref: '#/components/schemas/NivelEnum'
+        fecha_nacimiento:
+          type: string
+          format: date
+          nullable: true
+          title: Fecha de Nacimiento
+        foto_perfil:
+          type: string
+          format: uri
+          nullable: true
+          title: Foto de Perfil
+        orden:
+          type: integer
+        activo:
+          type: boolean
+        created_at:
+          type: string
+          format: date-time
+          title: Fecha de Registro
+        rendimiento:
+          allOf:
+          - $ref: '#/components/schemas/Rendimiento'
+          readOnly: true
+        nombre_completo:
+          type: string
+          readOnly: true
+    PatchedPago:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        musico_nombre:
+          type: string
+          readOnly: true
+        planilla_titulo:
+          type: string
+          readOnly: true
+        salario_base:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+        descuentos_totales:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+          description: Suma de descuentos aprobados
+        adelantos_totales:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+          description: Suma de adelantos (deudas) aprobados
+        neto_pagar:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+          description: salario_base - descuentos_totales - adelantos_totales
+        estado:
+          $ref: '#/components/schemas/PagoEstadoEnum'
+        fecha_liquidacion:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+        pagado_en:
+          type: string
+          format: date-time
+          nullable: true
+        observaciones:
+          type: string
+        musico:
+          type: integer
+        planilla:
+          type: integer
+          nullable: true
+    PatchedPlanillaLiquidacion:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        titulo:
+          type: string
+          maxLength: 200
+        fecha_creacion:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+        completada:
+          type: boolean
+        observaciones:
+          type: string
+        eventos:
+          type: array
+          items:
+            type: integer
+        eventos_detalles:
+          type: array
+          items:
+            $ref: '#/components/schemas/Evento'
+          readOnly: true
+    PatchedResultadoCanaston:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        musico_nombre:
+          type: string
+          readOnly: true
+        musico_instrumento:
+          type: string
+          readOnly: true
+        campana_titulo:
+          type: string
+          readOnly: true
+        score_lealtad_snapshot:
+          type: integer
+          description: Score de lealtad al momento del cálculo
+        porcentaje_asistencia_snapshot:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,2})?$
+          description: Porcentaje de asistencia en el período
+        es_elegible:
+          type: boolean
+          description: Cumple con los requisitos para recibir canastón
+        estado_entrega:
+          $ref: '#/components/schemas/EstadoEntregaEnum'
+        fecha_calculo:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+        campana:
+          type: integer
+        musico:
+          type: integer
+    PatchedUsuarioCreate:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        username:
+          type: string
+          title: Nombre de usuario
+          description: 'Requerido. 150 carácteres como máximo. Únicamente letras,
+            dígitos y @/./+/-/_ '
+          pattern: ^[\w.@+-]+$
+          maxLength: 150
+        password:
+          type: string
+          writeOnly: true
+        ci:
+          type: string
+          writeOnly: true
+        first_name:
+          type: string
+          title: Nombre
+          maxLength: 150
+        last_name:
+          type: string
+          title: Apellidos
+          maxLength: 150
+        email:
+          type: string
+          format: email
+          title: Dirección de correo electrónico
+          maxLength: 254
+        rol:
+          $ref: '#/components/schemas/RolEnum'
+        telefono:
+          type: string
+          maxLength: 20
+        is_active:
+          type: boolean
+          title: Activo
+          description: Indica si el usuario debe ser tratado como activo. Desmarque
+            esta opción en lugar de borrar la cuenta.
+        musico_data:
+          type: object
+          additionalProperties: {}
+          writeOnly: true
+        modulos_personales:
+          type: array
+          items:
+            type: string
+          writeOnly: true
+        seccion_encargada:
+          type: string
+    PlanillaLiquidacion:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        titulo:
+          type: string
+          maxLength: 200
+        fecha_creacion:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+        completada:
+          type: boolean
+        observaciones:
+          type: string
+        eventos:
+          type: array
+          items:
+            type: integer
+        eventos_detalles:
+          type: array
+          items:
+            $ref: '#/components/schemas/Evento'
+          readOnly: true
+      required:
+      - eventos_detalles
+      - fecha_creacion
+      - id
+      - titulo
+    PlanillaLiquidacionDetalle:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        total_pagos:
+          type: string
+          readOnly: true
+        titulo:
+          type: string
+          maxLength: 200
+        fecha_creacion:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+        completada:
+          type: boolean
+        observaciones:
+          type: string
+        eventos:
+          type: array
+          items:
+            type: integer
+        eventos_detalles:
+          type: array
+          items:
+            $ref: '#/components/schemas/Evento'
+          readOnly: true
+        pagos_detalles:
+          type: array
+          items:
+            $ref: '#/components/schemas/Pago'
+          readOnly: true
+      required:
+      - eventos_detalles
+      - fecha_creacion
+      - id
+      - pagos_detalles
+      - titulo
+      - total_pagos
+    Rendimiento:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        score_lealtad:
+          type: integer
+        porcentaje_asistencia:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,2})?$
+        puntualidad_promedio:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,2})?$
+        antiguedad_meses:
+          type: integer
+        total_descuentos:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+        ultima_actualizacion:
+          type: string
+          format: date-time
+          readOnly: true
+        musico:
+          type: integer
+      required:
+      - id
+      - musico
+      - ultima_actualizacion
+    ResponsableEnum:
+      enum:
+      - DIRECTOR
+      - SUBDIRECTOR
+      - PRESIDENTE
+      type: string
+      description: |-
+        * `DIRECTOR` - Director
+        * `SUBDIRECTOR` - Subdirector
+        * `PRESIDENTE` - Presidente/Fundador
+    ResultadoCanaston:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        musico_nombre:
+          type: string
+          readOnly: true
+        musico_instrumento:
+          type: string
+          readOnly: true
+        campana_titulo:
+          type: string
+          readOnly: true
+        score_lealtad_snapshot:
+          type: integer
+          description: Score de lealtad al momento del cálculo
+        porcentaje_asistencia_snapshot:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,2})?$
+          description: Porcentaje de asistencia en el período
+        es_elegible:
+          type: boolean
+          description: Cumple con los requisitos para recibir canastón
+        estado_entrega:
+          $ref: '#/components/schemas/EstadoEntregaEnum'
+        fecha_calculo:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+        campana:
+          type: integer
+        musico:
+          type: integer
+      required:
+      - campana
+      - campana_titulo
+      - fecha_calculo
+      - id
+      - musico
+      - musico_instrumento
+      - musico_nombre
+      - porcentaje_asistencia_snapshot
+      - score_lealtad_snapshot
+    RolEnum:
+      enum:
+      - PRESIDENTE
+      - DIRECTOR
+      - SUBDIRECTOR
+      - JEFE_SECCION
+      - MUSICO
+      type: string
+      description: |-
+        * `PRESIDENTE` - Presidente/Fundador
+        * `DIRECTOR` - Director
+        * `SUBDIRECTOR` - Subdirector
+        * `JEFE_SECCION` - Jefe de Sección
+        * `MUSICO` - Músico
+    SeccionEnum:
+      enum:
+      - TROMPETA
+      - TROMBON
+      - SAXOFON
+      - CLARINETE
+      - FLAUTA
+      - TUBA
+      - BARITONO
+      - BOMBO
+      - TAMBOR
+      - PLATILLOS
+      - PERCUSION
+      - OTRO
+      type: string
+      description: |-
+        * `TROMPETA` - Trompeta
+        * `TROMBON` - Trombón
+        * `SAXOFON` - Saxofón
+        * `CLARINETE` - Clarinete
+        * `FLAUTA` - Flauta
+        * `TUBA` - Tuba
+        * `BARITONO` - Barítono
+        * `BOMBO` - Bombo
+        * `TAMBOR` - Tambor
+        * `PLATILLOS` - Platillos
+        * `PERCUSION` - Percusión General
+        * `OTRO` - Otro
+    TokenObtainPair:
+      type: object
+      properties:
+        username:
+          type: string
+          writeOnly: true
+        password:
+          type: string
+          writeOnly: true
+        access:
+          type: string
+          readOnly: true
+        refresh:
+          type: string
+          readOnly: true
+      required:
+      - access
+      - password
+      - refresh
+      - username
+    TokenRefresh:
+      type: object
+      properties:
+        access:
+          type: string
+          readOnly: true
+        refresh:
+          type: string
+      required:
+      - access
+      - refresh
+    UniformeEnum:
+      enum:
+      - GALA
+      - DIARIO
+      - VIAJE
+      - VELADA
+      - OTRO
+      type: string
+      description: |-
+        * `GALA` - Uniforme de Gala
+        * `DIARIO` - Uniforme Diario
+        * `VIAJE` - Uniforme de Viaje
+        * `VELADA` - Uniforme de Velada
+        * `OTRO` - Otro (especificar)
+    Usuario:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        username:
+          type: string
+          readOnly: true
+          title: Nombre de usuario
+          description: 'Requerido. 150 carácteres como máximo. Únicamente letras,
+            dígitos y @/./+/-/_ '
+        first_name:
+          type: string
+          title: Nombre
+          maxLength: 150
+        last_name:
+          type: string
+          title: Apellidos
+          maxLength: 150
+        email:
+          type: string
+          format: email
+          title: Dirección de correo electrónico
+          maxLength: 254
+        rol:
+          $ref: '#/components/schemas/RolEnum'
+        telefono:
+          type: string
+          maxLength: 20
+        is_active:
+          type: boolean
+          title: Activo
+          description: Indica si el usuario debe ser tratado como activo. Desmarque
+            esta opción en lugar de borrar la cuenta.
+        modulos:
+          type: string
+          readOnly: true
+        modulos_personales:
+          type: string
+          readOnly: true
+        musico_data:
+          type: string
+          readOnly: true
+        seccion_encargada:
+          type: string
+          nullable: true
+          description: Sección asignada para Jefe de Sección
+          maxLength: 50
+      required:
+      - id
+      - modulos
+      - modulos_personales
+      - musico_data
+      - username
+    UsuarioCreate:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        username:
+          type: string
+          title: Nombre de usuario
+          description: 'Requerido. 150 carácteres como máximo. Únicamente letras,
+            dígitos y @/./+/-/_ '
+          pattern: ^[\w.@+-]+$
+          maxLength: 150
+        password:
+          type: string
+          writeOnly: true
+        ci:
+          type: string
+          writeOnly: true
+        first_name:
+          type: string
+          title: Nombre
+          maxLength: 150
+        last_name:
+          type: string
+          title: Apellidos
+          maxLength: 150
+        email:
+          type: string
+          format: email
+          title: Dirección de correo electrónico
+          maxLength: 254
+        rol:
+          $ref: '#/components/schemas/RolEnum'
+        telefono:
+          type: string
+          maxLength: 20
+        is_active:
+          type: boolean
+          title: Activo
+          description: Indica si el usuario debe ser tratado como activo. Desmarque
+            esta opción en lugar de borrar la cuenta.
+        musico_data:
+          type: object
+          additionalProperties: {}
+          writeOnly: true
+        modulos_personales:
+          type: array
+          items:
+            type: string
+          writeOnly: true
+        seccion_encargada:
+          type: string
+      required:
+      - id
+      - username
+  securitySchemes:
+    jwtAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT

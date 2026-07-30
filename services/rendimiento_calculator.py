@@ -205,13 +205,32 @@ class RendimientoCalculator:
         
         return int(round(score_total))
     
-    def obtener_top_musicos(self, limite: int = 10, fecha_corte: date = None) -> List[Dict]:
+    def obtener_top_musicos(self, limite: int = 10, fecha_corte: date = None, queryset=None, recalcular: bool = True) -> List[Dict]:
         """Obtiene el top de músicos para el canastón"""
         if fecha_corte is None:
             fecha_corte = date.today()
+            
+        if not recalcular:
+            base_query = RendimientoMusico.objects.select_related('musico')
+            if queryset is not None:
+                base_query = base_query.filter(musico__in=queryset)
+            
+            top_rendimientos = base_query.order_by('-score_lealtad')[:limite]
+            resultados = []
+            for r in top_rendimientos:
+                resultados.append({
+                    'musico': r.musico,
+                    'score_lealtad': r.score_lealtad,
+                    'asistencia': {'porcentaje': r.porcentaje_asistencia},
+                    'puntualidad': {'promedio_minutos': r.puntualidad_promedio},
+                    'antiguedad_meses': r.antiguedad_meses,
+                    'descuentos': {'total': r.total_descuentos},
+                    'rendimiento': r
+                })
+            return resultados
         
-        # Calcular rendimiento para todos los músicos activos
-        musicos_activos = Musico.objects.filter(activo=True)
+        # Calcular rendimiento para los músicos activos (o los del queryset)
+        musicos_activos = queryset if queryset is not None else Musico.objects.filter(activo=True)
         resultados = []
         
         for musico in musicos_activos:
@@ -223,12 +242,12 @@ class RendimientoCalculator:
         
         return resultados[:limite]
     
-    def generar_ranking_completo(self, fecha_corte: date = None) -> Dict:
+    def generar_ranking_completo(self, fecha_corte: date = None, recalcular: bool = True) -> Dict:
         """Genera ranking completo con estadísticas agregadas"""
         if fecha_corte is None:
             fecha_corte = date.today()
         
-        top_musicos = self.obtener_top_musicos(limite=50, fecha_corte=fecha_corte)
+        top_musicos = self.obtener_top_musicos(limite=50, fecha_corte=fecha_corte, recalcular=recalcular)
         
         # Estadísticas generales
         if top_musicos:

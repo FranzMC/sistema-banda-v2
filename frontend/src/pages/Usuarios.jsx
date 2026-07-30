@@ -1,445 +1,525 @@
 import { useEffect, useState } from 'react';
 import api from '../services/api.js';
-import { Plus, Edit3, Save, Trash2, ShieldCheck, ChevronLeft } from 'lucide-react';
+import { Save, Search, Shield, User, Lock, IdCard, CheckCircle2, ChevronRight, Activity, AlertCircle, Eye, EyeOff } from 'lucide-react';
+import Notification from '../components/Notification';
 
 const roles = [
-  { value: 'PRESIDENTE', label: 'Presidente/Fundador' },
-  { value: 'DIRECTOR', label: 'Director' },
-  { value: 'SUBDIRECTOR', label: 'Jefe de Sección' },
-  { value: 'MUSICO', label: 'Músico' },
+  { value: 'PRESIDENTE', label: 'Presidente Fundador', color: 'from-purple-500 to-indigo-600' },
+  { value: 'DIRECTOR', label: 'Director', color: 'from-blue-500 to-cyan-600' },
+  { value: 'SUBDIRECTOR', label: 'Subdirector', color: 'from-teal-500 to-emerald-600' },
+  { value: 'JEFE_SECCION', label: 'Jefe de Sección', color: 'from-orange-500 to-amber-600' },
+  { value: 'MUSICO', label: 'Músico', color: 'from-slate-500 to-slate-700' },
 ];
 
-const initialForm = {
-  id: null,
-  username: '',
-  password: '',
-  ci: '',
-  first_name: '',
-  last_name: '',
-  email: '',
-  telefono: '',
-  rol: 'MUSICO',
-  is_active: true,
-  documento_identidad: '',
-  musico_telefono: '',
-  modulos_personales: [],
-};
+const secciones = [
+  'TROMPETA', 'TROMBON', 'SAXOFON', 'CLARINETE', 
+  'TUBA', 'BARITONO', 'PERCUSION'
+];
 
 export default function Usuarios() {
-  const [users, setUsers] = useState([]);
-  const [modules, setModules] = useState([]);
-  const [form, setForm] = useState(initialForm);
-  const [isEditing, setIsEditing] = useState(false);
+  const [musicos, setMusicos] = useState([]);
+  const [allUsers, setAllUsers] = useState([]);
+  const [selectedMusico, setSelectedMusico] = useState(null);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [userData, setUserData] = useState(null);
+  const [selectedRol, setSelectedRol] = useState('MUSICO');
+  const [selectedSeccion, setSelectedSeccion] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [message, setMessage] = useState('');
-  const [error, setError] = useState('');
+  const [showPin, setShowPin] = useState(false);
+  const [notification, setNotification] = useState({ show: false, type: 'success', message: '' });
+
+  const [modulosPorRol, setModulosPorRol] = useState({});
+  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('');
+
+  // Implementar debounce simple para la búsqueda
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearchTerm(searchTerm);
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [searchTerm]);
 
   useEffect(() => {
-    fetchUsers();
-    fetchModules();
+    fetchMusicos(debouncedSearchTerm);
+  }, [debouncedSearchTerm]);
+
+  useEffect(() => {
+    fetchAllUsers();
+    fetchRolesModules();
   }, []);
 
-  const fetchUsers = async () => {
+  const fetchRolesModules = async () => {
     try {
-      const response = await api.get('usuarios/');
-      setUsers(response.data);
+      const response = await api.get('/usuarios/roles_modules/');
+      setModulosPorRol(response.data);
     } catch (err) {
-      console.error(err);
-      setError('No se pudo cargar la lista de usuarios.');
+      console.error('Error cargando módulos por rol', err);
     }
   };
 
-  const fetchModules = async () => {
+  const fetchMusicos = async (search = '') => {
     try {
-      const response = await api.get('modulos/');
-      setModules(response.data.filter((module) => module.activo));
+      const endpoint = search ? `/musicos/?search=${encodeURIComponent(search)}` : '/musicos/';
+      const response = await api.get(endpoint);
+      setMusicos(response.data);
     } catch (err) {
       console.error(err);
-      setError('No se pudo cargar los módulos disponibles.');
+      setNotification({ show: true, type: 'error', message: 'No se pudo cargar la lista de músicos' });
     }
   };
 
-  const resetForm = () => {
-    setForm(initialForm);
-    setIsEditing(false);
-    setMessage('');
-    setError('');
+  const fetchAllUsers = async () => {
+    try {
+      const response = await api.get('/usuarios/');
+      setAllUsers(response.data);
+    } catch (err) {
+      console.error(err);
+    }
   };
 
-  const handleInput = (event) => {
-    const { name, value, type, checked } = event.target;
-    setForm((prev) => ({
-      ...prev,
-      [name]: type === 'checkbox' ? checked : value,
-    }));
+  const filteredMusicos = musicos;
+
+  const handleSelectMusico = async (musico) => {
+    setSelectedMusico(musico);
+    setSelectedRol('MUSICO');
+    
+    try {
+      const response = await api.get(`/usuarios/?musico_id=${musico.id}`);
+      const usuarioData = response.data.length > 0 ? response.data[0] : null;
+      
+      if (usuarioData) {
+        setUserData(usuarioData);
+        setSelectedRol(usuarioData.rol || 'MUSICO');
+        if (usuarioData.seccion_encargada) {
+          setSelectedSeccion(
+            typeof usuarioData.seccion_encargada === 'string'
+              ? usuarioData.seccion_encargada.split(',').map(s => s.trim())
+              : usuarioData.seccion_encargada
+          );
+        } else {
+          setSelectedSeccion([]);
+        }
+      } else {
+        setUserData(null);
+        setSelectedSeccion([]);
+      }
+    } catch (err) {
+      console.error(err);
+      setNotification({ show: true, type: 'error', message: 'Error al cargar datos del usuario' });
+    }
   };
 
-  const handleModuleChange = (moduleClave) => {
-    setForm((prev) => {
-      const list = prev.modulos_personales || [];
-      if (list.includes(moduleClave)) {
-        return {
-          ...prev,
-          modulos_personales: list.filter((clave) => clave !== moduleClave),
+  const getPinFromCI = (ci) => {
+    if (!ci) return '----';
+    const digits = ci.replace(/[^0-9]/g, '');
+    return digits.slice(0, 4).padEnd(4, '0');
+  };
+
+  const generateUsername = (nombres, apellidos) => {
+    if (!nombres) return 'usuario';
+    const primerNombre = nombres.trim().split(' ')[0].toLowerCase();
+    const existingUsernames = allUsers
+      .filter(u => !userData || u.id !== userData.id)
+      .map(u => u.username.toLowerCase());
+    
+    if (!existingUsernames.includes(primerNombre)) {
+      return primerNombre;
+    }
+    
+    let counter = 1;
+    while (existingUsernames.includes(`${primerNombre}${counter}`)) {
+      counter++;
+    }
+    return `${primerNombre}${counter}`;
+  };
+
+  const handleSubmit = async () => {
+    if (!selectedMusico) {
+      setNotification({ show: true, type: 'error', message: 'Selecciona un músico primero' });
+      return;
+    }
+
+    if (selectedRol === 'JEFE_SECCION' && selectedSeccion.length === 0) {
+      setNotification({ show: true, type: 'error', message: 'Debes seleccionar al menos una sección' });
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const password = getPinFromCI(selectedMusico.documento_identidad);
+      const username = generateUsername(selectedMusico.nombres, selectedMusico.apellidos);
+      
+      const payload = {
+        username: username,
+        password: password,
+        rol: selectedRol,
+        ci: selectedMusico.documento_identidad,
+        first_name: selectedMusico.nombres,
+        last_name: selectedMusico.apellidos,
+        telefono: selectedMusico.telefono,
+        is_active: true,
+        seccion_encargada: selectedRol === 'JEFE_SECCION' ? selectedSeccion.join(',') : null,
+      };
+
+      if (!userData) {
+        payload.musico_data = {
+          documento_identidad: selectedMusico.documento_identidad,
+          nombres: selectedMusico.nombres,
+          apellidos: selectedMusico.apellidos,
+          telefono: selectedMusico.telefono,
         };
       }
-      return {
-        ...prev,
-        modulos_personales: [...list, moduleClave],
-      };
-    });
-  };
 
-  const handleEdit = (user) => {
-    const musicoData = user.musico_data || {};
-    setForm({
-      id: user.id,
-      username: user.username,
-      password: '',
-      ci: '',
-      first_name: user.first_name || '',
-      last_name: user.last_name || '',
-      email: user.email || '',
-      telefono: user.telefono || '',
-      rol: user.rol,
-      is_active: user.is_active,
-      documento_identidad: musicoData.documento_identidad || '',
-      musico_telefono: musicoData.telefono || user.telefono || '',
-      modulos_personales: user.modulos_personales || [],
-    });
-    setIsEditing(true);
-    setMessage('');
-    setError('');
-  };
-
-  const handleSubmit = async (event) => {
-    event.preventDefault();
-    setLoading(true);
-    setError('');
-    setMessage('');
-
-    const payload = {
-      username: form.username,
-      password: form.password || undefined,
-      ci: form.ci || undefined,
-      first_name: form.first_name,
-      last_name: form.last_name,
-      email: form.email,
-      telefono: form.telefono,
-      rol: form.rol,
-      is_active: form.is_active,
-      modulos_personales: form.modulos_personales,
-    };
-
-    if (form.rol === 'MUSICO') {
-      payload.musico_data = {
-        documento_identidad: form.documento_identidad,
-        nombres: form.first_name,
-        apellidos: form.last_name,
-        telefono: form.musico_telefono || form.telefono,
-      };
-    }
-
-    try {
-      if (isEditing) {
-        await api.patch(`usuarios/${form.id}/`, payload);
-        setMessage('Usuario actualizado correctamente.');
+      if (userData) {
+        await api.patch(`/usuarios/${userData.id}/`, payload);
+        const seccionesTexto = selectedSeccion.length > 0 ? selectedSeccion.join(', ') : 'ninguna';
+        setNotification({ show: true, type: 'success', message: `¡ACTUALIZADO! ${selectedMusico.nombre_completo} ahora es ${selectedRol}` });
       } else {
-        await api.post('usuarios/', payload);
-        setMessage('Usuario creado correctamente.');
+        await api.post('/usuarios/', payload);
+        const seccionesTexto = selectedSeccion.length > 0 ? selectedSeccion.join(', ') : 'ninguna';
+        setNotification({ show: true, type: 'success', message: `¡CREADO! ${selectedMusico.nombre_completo} ahora es ${selectedRol}` });
       }
-      resetForm();
-      fetchUsers();
+      
+      const response = await api.get(`/usuarios/?musico_id=${selectedMusico.id}`);
+      setUserData(response.data.length > 0 ? response.data[0] : null);
+      await fetchAllUsers();
+      
+      setSelectedMusico(null);
+      setUserData(null);
+      setSelectedRol('MUSICO');
+      setSelectedSeccion([]);
+      setSearchTerm('');
     } catch (err) {
       console.error(err);
-      setError(
-        err.response?.data ? JSON.stringify(err.response.data) : 'No se pudo guardar el usuario.'
-      );
+      setNotification({ show: true, type: 'error', message: 'ERROR AL GUARDAR EL USUARIO' });
     } finally {
       setLoading(false);
     }
   };
 
-  const handleDelete = async (userId) => {
-    if (!window.confirm('¿Eliminar este usuario? Esta acción no se puede deshacer.')) {
-      return;
-    }
-    try {
-      await api.delete(`usuarios/${userId}/`);
-      fetchUsers();
-      setMessage('Usuario eliminado.');
-    } catch (err) {
-      console.error(err);
-      setError('No se pudo eliminar el usuario.');
+  const handleResetPin = async () => {
+    if (!userData || !userData.id) return;
+    
+    if (window.confirm(`¿Estás seguro de que deseas restablecer el PIN de ${selectedMusico.nombre_completo}?`)) {
+      try {
+        setLoading(true);
+        const response = await api.post(`/usuarios/${userData.id}/reset_pin/`);
+        setNotification({ show: true, type: 'success', message: response.data.message || 'PIN restablecido exitosamente' });
+      } catch (err) {
+        console.error(err);
+        setNotification({ show: true, type: 'error', message: 'Error al restablecer el PIN' });
+      } finally {
+        setLoading(false);
+      }
     }
   };
 
+  // UI Helpers
+  const getInitials = (name) => {
+    if (!name) return '??';
+    const parts = name.split(' ').filter(p => p.length > 0);
+    if (parts.length >= 2) {
+      return (parts[0][0] + parts[1][0]).toUpperCase();
+    }
+    return name.substring(0, 2).toUpperCase();
+  };
+
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between gap-4">
-        <div>
-          <h2 className="text-3xl font-semibold text-slate-900">Usuarios y permisos</h2>
-          <p className="text-sm text-slate-500 max-w-2xl">
-            Crea usuarios, asigna roles y controla módulos individuales para cada cuenta.
-          </p>
+    <div className="space-y-8 pb-12 animate-in fade-in slide-in-from-bottom-4 duration-500">
+      {/* Header Premium */}
+      <div className="flex flex-col gap-2 relative z-10">
+        <div className="inline-flex items-center gap-3">
+          <div className="p-3 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-2xl shadow-lg shadow-indigo-200">
+            <Shield className="w-6 h-6 text-white" />
+          </div>
+          <h2 className="text-4xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-slate-900 via-indigo-900 to-slate-900">
+            Usuarios y Permisos
+          </h2>
         </div>
-        <button
-          onClick={resetForm}
-          className="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-4 py-3 text-sm font-semibold text-white shadow-sm hover:bg-blue-700 transition-colors"
-        >
-          <Plus className="h-4 w-4" />
-          Nuevo usuario
-        </button>
+        <p className="text-slate-500 max-w-2xl text-lg ml-16">
+          Gestiona los accesos, genera credenciales y controla los roles de cada integrante de la institución.
+        </p>
       </div>
 
-      {(message || error) && (
-        <div className={`rounded-2xl p-4 text-sm ${message ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-rose-50 text-rose-700 border border-rose-200'}`}>
-          {message || error}
-        </div>
+      {notification.show && (
+        <Notification
+          type={notification.type}
+          message={notification.message}
+          onClose={() => setNotification({ ...notification, show: false })}
+        />
       )}
 
-      <div className="grid gap-6 xl:grid-cols-[1.4fr_1fr]">
-        <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-          <div className="flex items-center justify-between mb-4">
-            <div>
-              <p className="text-sm uppercase tracking-[0.2em] text-slate-400">Formulario</p>
-              <h3 className="text-xl font-semibold text-slate-900">Registrar / editar usuario</h3>
-            </div>
-            {isEditing && (
-              <button onClick={resetForm} className="text-sm font-medium text-slate-600 hover:text-slate-900">
-                <ChevronLeft className="inline-block w-4 h-4 mr-1 align-text-bottom" />
-                Cancelar edición
-              </button>
-            )}
-          </div>
+      {/* Main Container - Glassmorphism */}
+      <section className="relative rounded-[2rem] border border-white/40 bg-white/60 backdrop-blur-xl p-8 shadow-[0_8px_30px_rgb(0,0,0,0.04)] overflow-hidden">
+        {/* Background glow effects */}
+        <div className="absolute top-0 right-0 -mr-20 -mt-20 w-64 h-64 rounded-full bg-indigo-500/10 blur-3xl pointer-events-none" />
+        <div className="absolute bottom-0 left-0 -ml-20 -mb-20 w-64 h-64 rounded-full bg-purple-500/10 blur-3xl pointer-events-none" />
 
-          <form className="space-y-4" onSubmit={handleSubmit}>
-            <div className="grid gap-4 sm:grid-cols-2">
-              <label className="block text-sm font-medium text-slate-700">
-                Nombre
+        <div className="relative z-10">
+          {!selectedMusico ? (
+            <div className="animate-in fade-in zoom-in-95 duration-300">
+              <h3 className="text-xl font-bold text-slate-800 mb-6 flex items-center gap-3">
+                <Search className="w-5 h-5 text-indigo-500" />
+                Buscar Integrante
+              </h3>
+              
+              {/* Search Bar Premium */}
+              <div className="relative group mb-8">
+                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                  <Search className="h-5 w-5 text-slate-400 group-focus-within:text-indigo-500 transition-colors" />
+                </div>
                 <input
                   type="text"
-                  name="first_name"
-                  value={form.first_name}
-                  onChange={handleInput}
-                  required
-                  className="mt-2 w-full rounded-2xl border border-slate-200 px-4 py-3 focus:border-blue-500 focus:ring-blue-500 outline-none"
+                  placeholder="Ej. Juan Pérez o 1234567..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="block w-full pl-12 pr-4 py-4 bg-white/80 border border-slate-200 rounded-2xl text-lg focus:ring-4 focus:ring-indigo-500/20 focus:border-indigo-500 focus:bg-white transition-all outline-none shadow-sm placeholder:text-slate-400"
                 />
-              </label>
-              <label className="block text-sm font-medium text-slate-700">
-                Apellido
-                <input
-                  type="text"
-                  name="last_name"
-                  value={form.last_name}
-                  onChange={handleInput}
-                  required
-                  className="mt-2 w-full rounded-2xl border border-slate-200 px-4 py-3 focus:border-blue-500 focus:ring-blue-500 outline-none"
-                />
-              </label>
-            </div>
+              </div>
 
-            <div className="grid gap-4 sm:grid-cols-2">
-              <label className="block text-sm font-medium text-slate-700">
-                Usuario
-                <input
-                  type="text"
-                  name="username"
-                  value={form.username}
-                  onChange={handleInput}
-                  required={!isEditing}
-                  disabled={isEditing}
-                  className="mt-2 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 focus:border-blue-500 focus:ring-blue-500 outline-none disabled:cursor-not-allowed"
-                />
-              </label>
-              <label className="block text-sm font-medium text-slate-700">
-                Correo
-                <input
-                  type="email"
-                  name="email"
-                  value={form.email}
-                  onChange={handleInput}
-                  className="mt-2 w-full rounded-2xl border border-slate-200 px-4 py-3 focus:border-blue-500 focus:ring-blue-500 outline-none"
-                />
-              </label>
-            </div>
-
-            <div className="grid gap-4 sm:grid-cols-2">
-              <label className="block text-sm font-medium text-slate-700">
-                Rol
-                <select
-                  name="rol"
-                  value={form.rol}
-                  onChange={handleInput}
-                  className="mt-2 w-full rounded-2xl border border-slate-200 px-4 py-3 focus:border-blue-500 focus:ring-blue-500 outline-none"
-                >
-                  {roles.map((role) => (
-                    <option key={role.value} value={role.value}>{role.label}</option>
+              {/* Resultados */}
+              {searchTerm && filteredMusicos.length > 0 && (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {filteredMusicos.map((musico) => (
+                    <button
+                      key={musico.id}
+                      onClick={() => handleSelectMusico(musico)}
+                      className="group flex items-center gap-4 p-4 rounded-2xl border border-slate-200 bg-white/50 hover:bg-white hover:border-indigo-300 hover:shadow-xl hover:shadow-indigo-500/10 hover:-translate-y-1 transition-all duration-300 text-left"
+                    >
+                      {/* Avatar */}
+                      <div className="flex-shrink-0 w-12 h-12 rounded-full bg-gradient-to-br from-slate-100 to-slate-200 border border-slate-300 flex items-center justify-center text-slate-600 font-bold group-hover:from-indigo-100 group-hover:to-purple-100 group-hover:text-indigo-700 group-hover:border-indigo-300 transition-colors">
+                        {getInitials(musico.nombre_completo)}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-base font-bold text-slate-900 truncate group-hover:text-indigo-700 transition-colors">
+                          {musico.nombre_completo}
+                        </p>
+                        <p className="text-sm text-slate-500 flex items-center gap-2">
+                          <IdCard className="w-3 h-3" /> {musico.documento_identidad}
+                        </p>
+                      </div>
+                      <div className="text-slate-300 group-hover:text-indigo-500 transition-colors">
+                        <ChevronRight className="w-5 h-5" />
+                      </div>
+                    </button>
                   ))}
-                </select>
-              </label>
-              <label className="block text-sm font-medium text-slate-700">
-                Teléfono
-                <input
-                  type="text"
-                  name="telefono"
-                  value={form.telefono}
-                  onChange={handleInput}
-                  className="mt-2 w-full rounded-2xl border border-slate-200 px-4 py-3 focus:border-blue-500 focus:ring-blue-500 outline-none"
-                />
-              </label>
+                </div>
+              )}
+              
+              {searchTerm && filteredMusicos.length === 0 && (
+                <div className="text-center py-12">
+                  <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-slate-100 mb-4">
+                    <Search className="w-8 h-8 text-slate-400" />
+                  </div>
+                  <h4 className="text-lg font-medium text-slate-900">No se encontraron resultados</h4>
+                  <p className="text-slate-500 mt-1">Intenta buscar con otro nombre o número de documento.</p>
+                </div>
+              )}
             </div>
-
-            <div className="grid gap-4 sm:grid-cols-2">
-              <label className="block text-sm font-medium text-slate-700">
-                CI
-                <input
-                  type="text"
-                  name="ci"
-                  value={form.ci}
-                  onChange={handleInput}
-                  className="mt-2 w-full rounded-2xl border border-slate-200 px-4 py-3 focus:border-blue-500 focus:ring-blue-500 outline-none"
-                />
-              </label>
-              <label className="block text-sm font-medium text-slate-700">
-                Contraseña
-                <input
-                  type="text"
-                  name="password"
-                  value={form.password}
-                  onChange={handleInput}
-                  placeholder="Opcional: se genera desde CI"
-                  className="mt-2 w-full rounded-2xl border border-slate-200 px-4 py-3 focus:border-blue-500 focus:ring-blue-500 outline-none"
-                />
-              </label>
-            </div>
-
-            {form.rol === 'MUSICO' && (
-              <div className="rounded-3xl border border-slate-200 bg-slate-50 p-4">
-                <p className="text-sm font-semibold text-slate-800 mb-3">Datos adicionales para músico</p>
-                <div className="grid gap-4 sm:grid-cols-2">
-                  <label className="block text-sm font-medium text-slate-700">
-                    CI del músico
-                    <input
-                      type="text"
-                      name="documento_identidad"
-                      value={form.documento_identidad}
-                      onChange={handleInput}
-                      className="mt-2 w-full rounded-2xl border border-slate-200 px-4 py-3 focus:border-blue-500 focus:ring-blue-500 outline-none"
-                    />
-                  </label>
-                  <label className="block text-sm font-medium text-slate-700">
-                    Teléfono músico
-                    <input
-                      type="text"
-                      name="musico_telefono"
-                      value={form.musico_telefono}
-                      onChange={handleInput}
-                      className="mt-2 w-full rounded-2xl border border-slate-200 px-4 py-3 focus:border-blue-500 focus:ring-blue-500 outline-none"
-                    />
-                  </label>
+          ) : (
+            <div className="space-y-8 animate-in fade-in zoom-in-95 duration-300">
+              {/* Header del Usuario Seleccionado */}
+              <div className="flex items-center justify-between pb-6 border-b border-slate-200/60">
+                <div className="flex items-center gap-4">
+                  <div className="w-16 h-16 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white text-2xl font-bold shadow-lg shadow-indigo-200">
+                    {getInitials(selectedMusico.nombre_completo)}
+                  </div>
+                  <div>
+                    <h4 className="text-2xl font-bold text-slate-900">
+                      {selectedMusico.nombre_completo}
+                    </h4>
+                    <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-100 text-sm font-medium text-slate-600 mt-2">
+                      <Activity className="w-4 h-4" />
+                      {selectedMusico.instrumento}
+                    </span>
+                  </div>
+                </div>
+                
+                <div className="flex items-center gap-3">
+                  {userData && (
+                    <button
+                      onClick={handleResetPin}
+                      disabled={loading}
+                      className="group relative inline-flex items-center gap-2 px-5 py-2.5 bg-rose-50 text-rose-600 font-semibold rounded-xl hover:bg-rose-600 hover:text-white transition-colors border border-rose-200 hover:border-rose-600 focus:ring-4 focus:ring-rose-500/20"
+                    >
+                      <Lock className="w-4 h-4" />
+                      <span>Restaurar PIN</span>
+                    </button>
+                  )}
+                  <button
+                    onClick={() => {
+                      setSelectedMusico(null);
+                      setUserData(null);
+                      setSelectedRol('MUSICO');
+                    }}
+                    className="px-5 py-2.5 bg-white border border-slate-200 text-slate-700 font-semibold rounded-xl hover:bg-slate-50 hover:text-indigo-600 transition-colors"
+                  >
+                    Cerrar
+                  </button>
                 </div>
               </div>
-            )}
-
-            <div className="rounded-3xl border border-slate-200 bg-slate-50 p-4">
-              <p className="text-sm font-semibold text-slate-800 mb-3">Módulos personales</p>
-              <div className="grid gap-2 sm:grid-cols-2">
-                {modules.map((module) => (
-                  <label key={module.clave} className="inline-flex items-center gap-2 text-sm text-slate-700">
-                    <input
-                      type="checkbox"
-                      checked={(form.modulos_personales || []).includes(module.clave)}
-                      onChange={() => handleModuleChange(module.clave)}
-                      className="h-4 w-4 rounded border-slate-300 text-blue-600"
-                    />
-                    {module.nombre}
-                  </label>
-                ))}
+              
+              {/* Widgets de Credenciales */}
+              <div>
+                <h5 className="text-sm font-bold text-slate-400 uppercase tracking-wider mb-4">Credenciales de Acceso</h5>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                  <div className="bg-white/80 border border-slate-200/60 p-5 rounded-2xl shadow-sm hover:shadow-md transition-shadow">
+                    <p className="text-xs font-semibold text-slate-500 mb-1">Nombre Corto</p>
+                    <p className="text-lg font-bold text-slate-900 truncate">{selectedMusico.nombres.split(' ')[0]}</p>
+                  </div>
+                  <div className="bg-white/80 border border-slate-200/60 p-5 rounded-2xl shadow-sm hover:shadow-md transition-shadow">
+                    <p className="text-xs font-semibold text-slate-500 mb-1">Usuario (Login)</p>
+                    <p className="text-lg font-bold text-indigo-600 truncate">{generateUsername(selectedMusico.nombres, selectedMusico.apellidos)}</p>
+                  </div>
+                  <div className="bg-white/80 border border-slate-200/60 p-5 rounded-2xl shadow-sm hover:shadow-md transition-shadow relative">
+                    <div className="flex items-center justify-between mb-1">
+                      <p className="text-xs font-semibold text-slate-500">PIN / Contraseña</p>
+                      {userData?.pin_actual && (
+                        <button 
+                          onClick={() => setShowPin(!showPin)}
+                          className="text-slate-400 hover:text-indigo-600 transition-colors"
+                          title={showPin ? "Ocultar PIN" : "Mostrar PIN (Solo Presidente)"}
+                        >
+                          {showPin ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                        </button>
+                      )}
+                    </div>
+                    <p className="text-lg font-bold text-slate-900 tracking-widest">
+                      {userData?.pin_actual ? (showPin ? userData.pin_actual : '****') : '****'}
+                    </p>
+                    <p className="text-[10px] text-slate-400 mt-1">
+                      {userData?.pin_actual ? 'Configurado' : 'Oculto por seguridad'}
+                    </p>
+                  </div>
+                  <div className="bg-white/80 border border-slate-200/60 p-5 rounded-2xl shadow-sm hover:shadow-md transition-shadow">
+                    <p className="text-xs font-semibold text-slate-500 mb-1">C.I.</p>
+                    <p className="text-lg font-bold text-slate-900">{selectedMusico.documento_identidad || '---'}</p>
+                  </div>
+                </div>
               </div>
-              <p className="mt-3 text-xs text-slate-500">
-                Estas asignaciones tienen prioridad sobre los permisos por rol y sirven para casos especiales.
-              </p>
-            </div>
 
-            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-              <button
-                type="submit"
-                disabled={loading}
-                className="inline-flex items-center justify-center gap-2 rounded-2xl bg-blue-600 px-5 py-3 text-sm font-semibold text-white hover:bg-blue-700 transition-colors disabled:opacity-70"
-              >
-                <Save className="h-4 w-4" />
-                {isEditing ? 'Actualizar usuario' : 'Crear usuario'}
-              </button>
-              <p className="text-sm text-slate-500">
-                Si no defines contraseña, se generará automáticamente con los primeros 4 dígitos del CI.
-              </p>
-            </div>
-          </form>
-        </section>
+              {/* Selector de Roles Premium */}
+              <div>
+                <h5 className="text-sm font-bold text-slate-400 uppercase tracking-wider mb-4">Nivel de Autoridad</h5>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-3">
+                  {roles.map((role) => {
+                    const isSelected = selectedRol === role.value;
+                    const colorParts = role.color.split('-');
+                    const mainColor = colorParts.length >= 2 ? colorParts[1] : 'indigo';
+                    return (
+                      <button
+                        key={role.value}
+                        onClick={() => setSelectedRol(role.value)}
+                        className={`relative group overflow-hidden p-4 rounded-2xl border-2 transition-all duration-300 text-left h-full ${
+                          isSelected
+                            ? `border-transparent shadow-lg scale-[1.02] bg-white`
+                            : 'border-slate-200 bg-white/50 hover:border-slate-300 hover:bg-white'
+                        }`}
+                        style={isSelected ? { boxShadow: `0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -4px rgba(0,0,0,0.1)` } : {}}
+                      >
+                        {isSelected && (
+                          <div className={`absolute inset-0 bg-gradient-to-br ${role.color} opacity-10`} />
+                        )}
+                        <div className="relative flex items-start justify-between">
+                          <div className={`font-bold ${isSelected ? 'text-slate-900' : 'text-slate-600 group-hover:text-slate-900'}`}>
+                            {role.label}
+                          </div>
+                          {isSelected && (
+                            <CheckCircle2 className={`w-5 h-5 text-${mainColor}-600 drop-shadow-sm animate-in zoom-in`} />
+                          )}
+                        </div>
+                        {isSelected && (
+                          <div className={`absolute bottom-0 left-0 h-1 w-full bg-gradient-to-r ${role.color}`} />
+                        )}
+                      </button>
+                    )
+                  })}
+                </div>
+              </div>
 
-        <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-          <div className="flex items-center justify-between mb-4">
-            <div>
-              <p className="text-sm uppercase tracking-[0.2em] text-slate-400">Usuarios registrados</p>
-              <h3 className="text-xl font-semibold text-slate-900">Lista de cuentas</h3>
-            </div>
-            <span className="inline-flex items-center gap-2 rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold uppercase tracking-[0.15em] text-slate-600">
-              {users.length} usuarios
-            </span>
-          </div>
+              {/* Opciones Especiales (Jefe de Sección) */}
+              {selectedRol === 'JEFE_SECCION' && (
+                <div className="animate-in fade-in slide-in-from-top-2 duration-300">
+                  <h5 className="text-sm font-bold text-orange-500 uppercase tracking-wider mb-4 flex items-center gap-2">
+                    <AlertCircle className="w-4 h-4" />
+                    Responsabilidad de Sección
+                  </h5>
+                  <div className="bg-orange-50/50 border border-orange-200/60 p-6 rounded-2xl">
+                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
+                      {secciones.map((seccion) => {
+                        const isChecked = selectedSeccion.includes(seccion);
+                        return (
+                          <label 
+                            key={seccion} 
+                            className={`flex flex-col items-center justify-center p-3 rounded-xl border-2 cursor-pointer transition-all ${
+                              isChecked ? 'border-orange-500 bg-orange-100/50 text-orange-900' : 'border-slate-200 bg-white text-slate-600 hover:border-orange-300'
+                            }`}
+                          >
+                            <input
+                              type="checkbox"
+                              className="sr-only"
+                              checked={isChecked}
+                              onChange={(e) => {
+                                if (e.target.checked) setSelectedSeccion([...selectedSeccion, seccion]);
+                                else setSelectedSeccion(selectedSeccion.filter(s => s !== seccion));
+                              }}
+                            />
+                            <span className="text-xs font-bold text-center">{seccion}</span>
+                          </label>
+                        )
+                      })}
+                    </div>
+                  </div>
+                </div>
+              )}
 
-          <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-slate-200">
-              <thead>
-                <tr className="text-left text-sm font-semibold text-slate-600 uppercase">
-                  <th className="px-4 py-3">Usuario</th>
-                  <th className="px-4 py-3">Nombre</th>
-                  <th className="px-4 py-3">Rol</th>
-                  <th className="px-4 py-3">Módulos</th>
-                  <th className="px-4 py-3">Acciones</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-200 text-sm text-slate-700">
-                {users.map((user) => (
-                  <tr key={user.id}>
-                    <td className="px-4 py-4 font-medium text-slate-900">{user.username}</td>
-                    <td className="px-4 py-4">{user.first_name} {user.last_name}</td>
-                    <td className="px-4 py-4">{roles.find((role) => role.value === user.rol)?.label || user.rol}</td>
-                    <td className="px-4 py-4 max-w-[280px] whitespace-normal">
-                      {(user.modulos || []).join(', ') || 'Sin módulos'}
-                    </td>
-                    <td className="px-4 py-4">
-                      <div className="flex flex-wrap gap-2">
-                        <button
-                          onClick={() => handleEdit(user)}
-                          className="inline-flex items-center gap-2 rounded-2xl bg-slate-100 px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-200"
-                        >
-                          <Edit3 className="h-3.5 w-3.5" />
-                          Editar
-                        </button>
-                        <button
-                          onClick={() => handleDelete(user.id)}
-                          className="inline-flex items-center gap-2 rounded-2xl bg-rose-100 px-3 py-2 text-xs font-semibold text-rose-700 hover:bg-rose-200"
-                        >
-                          <Trash2 className="h-3.5 w-3.5" />
-                          Eliminar
-                        </button>
+              {/* Módulos Permitidos (Visualización en Tags) */}
+              <div>
+                <h5 className="text-sm font-bold text-slate-400 uppercase tracking-wider mb-4">Acceso a Módulos (En Vivo)</h5>
+                <div className="bg-slate-900 rounded-2xl p-6 shadow-inner border border-slate-800">
+                  <div className="flex flex-wrap gap-3">
+                    {modulosPorRol[selectedRol]?.map((modulo, index) => (
+                      <div key={index} className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-white/10 border border-white/5 backdrop-blur-sm text-sm font-medium text-slate-200 animate-in fade-in zoom-in duration-300" style={{animationDelay: `${index * 50}ms`}}>
+                        <div className="w-2 h-2 rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.8)]" />
+                        {modulo}
                       </div>
-                    </td>
-                  </tr>
-                ))}
-                {users.length === 0 && (
-                  <tr>
-                    <td colSpan="5" className="px-4 py-6 text-center text-sm text-slate-500">No hay usuarios registrados.</td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
-          </div>
-        </section>
-      </div>
+                    ))}
+                    {(!modulosPorRol[selectedRol] || modulosPorRol[selectedRol].length === 0) && (
+                      <div className="text-slate-500 text-sm italic py-2">Ningún módulo asignado.</div>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* Acciones Finales */}
+              <div className="flex justify-end pt-4 border-t border-slate-200/60">
+                <button
+                  onClick={handleSubmit}
+                  disabled={loading}
+                  className="group relative overflow-hidden inline-flex items-center justify-center gap-2 rounded-2xl bg-slate-900 px-8 py-4 text-base font-bold text-white hover:bg-slate-800 transition-all shadow-lg hover:shadow-xl hover:-translate-y-1 focus:ring-4 focus:ring-slate-900/20 disabled:opacity-70 disabled:hover:translate-y-0"
+                >
+                  <div className="absolute inset-0 bg-gradient-to-r from-indigo-500 via-purple-500 to-indigo-500 opacity-0 group-hover:opacity-100 transition-opacity duration-500 bg-[length:200%_100%] animate-gradient" />
+                  <Save className="h-5 w-5 relative z-10" />
+                  <span className="relative z-10">{loading ? 'Procesando...' : (userData ? 'Guardar Cambios' : 'Confirmar Nuevo Usuario')}</span>
+                </button>
+              </div>
+
+            </div>
+          )}
+        </div>
+      </section>
+      
+      {/* Animación global CSS añadida */}
+      <style dangerouslySetInnerHTML={{__html: `
+        @keyframes gradient {
+          0% { background-position: 0% 50%; }
+          50% { background-position: 100% 50%; }
+          100% { background-position: 0% 50%; }
+        }
+        .animate-gradient {
+          animation: gradient 3s ease infinite;
+        }
+      `}} />
     </div>
   );
 }
-

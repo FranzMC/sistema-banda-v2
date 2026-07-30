@@ -1,28 +1,42 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
-from . import api_views
+from .views.musicos_views import MusicoViewSet, JefeSeccionViewSet, ContratoMusicoViewSet
+from .views.usuarios_views import UsuarioViewSet
+from .views.eventos_views import EventoViewSet, AsistenciaViewSet
+from .views.finanzas_views import (
+    DescuentoViewSet, PagoViewSet, AdelantoViewSet, PlanillaLiquidacionViewSet, 
+    DeudaViewSet, AbonoDeudaViewSet
+)
+from .views.config_views import ConfiguracionViewSet
+from .views.canastones_views import CampanaCanastonViewSet, ResultadoCanastonViewSet, CanastonEstadisticasView
+from .views.auth_views import PinAuthView, UserMeView
+from .views.dashboard_views import DashboardView, RankingView
+from .views.musico_resumen_views import MusicoResumenView
 
 router = DefaultRouter()
-router.register(r'musicos', api_views.MusicoViewSet, basename='musicos')
-router.register(r'usuarios', api_views.UsuarioViewSet, basename='usuarios')
-router.register(r'modulos', api_views.ModuloViewSet, basename='modulos')
-router.register(r'roles-modulos', api_views.RolModuloViewSet, basename='roles-modulos')
-router.register(r'eventos', api_views.EventoViewSet, basename='eventos')
-router.register(r'asistencias', api_views.AsistenciaViewSet, basename='asistencias')
-router.register(r'descuentos', api_views.DescuentoViewSet, basename='descuentos')
-router.register(r'pagos', api_views.PagoViewSet, basename='pagos')
-router.register(r'configuracion', api_views.ConfiguracionViewSet, basename='configuracion')
-router.register(r'adelantos', api_views.AdelantoViewSet, basename='adelantos')
-router.register(r'planillas', api_views.PlanillaLiquidacionViewSet, basename='planillas')
-router.register(r'contratos', api_views.ContratoMusicoViewSet, basename='contratos')
-router.register(r'deudas', api_views.DeudaViewSet, basename='deudas')
-router.register(r'abonos', api_views.AbonoDeudaViewSet, basename='abonos')
-router.register(r'jefes-seccion', api_views.JefeSeccionViewSet, basename='jefes-seccion')
+router.register(r'musicos', MusicoViewSet, basename='musicos')
+router.register(r'usuarios', UsuarioViewSet, basename='usuarios')
+router.register(r'eventos', EventoViewSet, basename='eventos')
+router.register(r'asistencias', AsistenciaViewSet, basename='asistencias')
+router.register(r'descuentos', DescuentoViewSet, basename='descuentos')
+router.register(r'pagos', PagoViewSet, basename='pagos')
+router.register(r'configuracion', ConfiguracionViewSet, basename='configuracion')
+router.register(r'adelantos', AdelantoViewSet, basename='adelantos')
+router.register(r'planillas', PlanillaLiquidacionViewSet, basename='planillas')
+router.register(r'contratos', ContratoMusicoViewSet, basename='contratos')
+router.register(r'deudas', DeudaViewSet, basename='deudas')
+router.register(r'abonos', AbonoDeudaViewSet, basename='abonos')
+router.register(r'jefes-seccion', JefeSeccionViewSet, basename='jefes-seccion')
+router.register(r'campanas-canaston', CampanaCanastonViewSet, basename='campanas-canaston')
+router.register(r'resultados-canaston', ResultadoCanastonViewSet, basename='resultados-canaston')
 
 urlpatterns = [
-    path('auth/me/', api_views.UserMeView.as_view(), name='auth_me'),
-    path('dashboard/', api_views.DashboardView.as_view(), name='dashboard'),
-    path('ranking/', api_views.RankingView.as_view(), name='ranking'),
+    path('auth/me/', UserMeView.as_view(), name='auth_me'),
+    path('auth/pin/', PinAuthView.as_view(), name='auth_pin'),
+    path('dashboard/', DashboardView.as_view(), name='dashboard'),
+    path('ranking/', RankingView.as_view(), name='ranking'),
+    path('canaston/estadisticas/', CanastonEstadisticasView.as_view(), name='canaston_estadisticas'),
+    path('musico/resumen/', MusicoResumenView.as_view(), name='musico_resumen'),
     path('', include(router.urls)),
 ]
 

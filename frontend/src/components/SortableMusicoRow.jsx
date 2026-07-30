@@ -13,6 +13,9 @@ export function SortableMusicoRow({ musico, index, onVer, onEditar, onEliminar }
     isDragging,
   } = useSortable({ id: musico.id });
 
+  const userRol = JSON.parse(localStorage.getItem('user'))?.rol;
+  const canEdit = !['JEFE_SECCION', 'MUSICO'].includes(userRol);
+
   const style = {
     transform: CSS.Transform.toString(transform),
     transition,
@@ -23,9 +26,11 @@ export function SortableMusicoRow({ musico, index, onVer, onEditar, onEliminar }
   return (
     <tr ref={setNodeRef} style={style} className={`hover:bg-blue-50/50 transition-colors ${isDragging ? 'bg-blue-50 shadow-lg' : ''}`}>
       <td className="p-4 text-gray-500 font-medium flex items-center gap-2">
-        <button {...attributes} {...listeners} className="cursor-grab hover:text-blue-600 focus:outline-none">
-           <GripVertical className="w-5 h-5 text-gray-400" />
-        </button>
+        {canEdit && (
+          <button {...attributes} {...listeners} className="cursor-grab hover:text-blue-600 focus:outline-none">
+             <GripVertical className="w-5 h-5 text-gray-400" />
+          </button>
+        )}
         {index + 1}
       </td>
       <td className="p-4 text-gray-800">{musico.documento_identidad || musico.ci}</td>
@@ -49,12 +54,16 @@ export function SortableMusicoRow({ musico, index, onVer, onEditar, onEliminar }
           <button onClick={() => onVer(musico)} className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors" title="Ver detalles">
             <Eye className="w-5 h-5" />
           </button>
-          <button onClick={() => onEditar(musico)} className="p-2 text-amber-600 hover:bg-amber-50 rounded-lg transition-colors" title="Editar">
-            <Edit2 className="w-5 h-5" />
-          </button>
-          <button onClick={() => onEliminar(musico)} className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors" title="Eliminar">
-            <Trash2 className="w-5 h-5" />
-          </button>
+          {canEdit && (
+            <>
+              <button onClick={() => onEditar(musico)} className="p-2 text-amber-600 hover:bg-amber-50 rounded-lg transition-colors" title="Editar">
+                <Edit2 className="w-5 h-5" />
+              </button>
+              <button onClick={() => onEliminar(musico)} className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors" title="Eliminar">
+                <Trash2 className="w-5 h-5" />
+              </button>
+            </>
+          )}
         </div>
       </td>
     </tr>

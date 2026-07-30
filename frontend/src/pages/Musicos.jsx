@@ -5,6 +5,7 @@ import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from 'recharts';
 import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors } from '@dnd-kit/core';
 import { arrayMove, SortableContext, verticalListSortingStrategy, sortableKeyboardCoordinates } from '@dnd-kit/sortable';
 import { SortableMusicoRow } from '../components/SortableMusicoRow';
+import Notification from '../components/Notification';
 
 const initialFormState = {
   id: null,
@@ -15,6 +16,7 @@ const initialFormState = {
 };
 
 export default function Musicos() {
+  const userRol = JSON.parse(localStorage.getItem('user'))?.rol;
   const [musicos, setMusicos] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [viewingMusico, setViewingMusico] = useState(null); // Estado para ver detalles
@@ -27,6 +29,7 @@ export default function Musicos() {
   const [reportColumns, setReportColumns] = useState({ ci: true, nombres_apellidos: true, celular: true, instrumento: true, tallas: true, estado: true, direccion: false, fecha_nacimiento: false, nivel: false });
   
   const [formData, setFormData] = useState(initialFormState);
+  const [notification, setNotification] = useState({ show: false, type: 'success', message: '' });
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -120,11 +123,11 @@ export default function Musicos() {
       if (formData.id) {
         // Si existe un id, actualizamos (PATCH)
         await api.patch(`/musicos/${formData.id}/`, data);
-        alert("¡Músico actualizado correctamente!");
+        setNotification({ show: true, type: 'success', message: '¡Músico actualizado correctamente!' });
       } else {
         // Si no, creamos uno nuevo (POST)
         await api.post('/musicos/', data);
-        alert("¡Músico registrado correctamente!");
+        setNotification({ show: true, type: 'success', message: '¡Músico creado exitosamente!' });
       }
       setIsModalOpen(false);
       fetchMusicos(); // Recargar la lista
@@ -133,7 +136,7 @@ export default function Musicos() {
       console.error("Error completo:", error);
       // Ocultar esta alerta si es error 401 (el interceptor ya lo maneja)
       if (error.response?.status !== 401) {
-        alert("Error al guardar: " + JSON.stringify(error.response?.data || error.message));
+        setNotification({ show: true, type: 'error', message: 'Error al guardar: ' + JSON.stringify(error.response?.data || error.message) });
       }
     }
   };
@@ -164,11 +167,12 @@ export default function Musicos() {
     if (!musicoToDelete) return;
     try {
       await api.delete(`/musicos/${musicoToDelete.id}/`);
+      setNotification({ show: true, type: 'success', message: '¡Músico eliminado correctamente!' });
       fetchMusicos(); // Recargar la lista
       setMusicoToDelete(null); // Cerrar el modal
     } catch (error) {
       if (error.response?.status !== 401) {
-        alert("Error al eliminar: " + JSON.stringify(error.response?.data || error.message));
+        setNotification({ show: true, type: 'error', message: 'Error al eliminar: ' + JSON.stringify(error.response?.data || error.message) });
       }
       setMusicoToDelete(null);
     }
@@ -176,7 +180,7 @@ export default function Musicos() {
 
   // Lógica de filtrado y búsqueda
   const filteredMusicos = useMemo(() => {
-    return musicos.filter(musico => {
+    const filtered = musicos.filter(musico => {
       const searchTermLower = searchTerm.toLowerCase();
       const matchesSearch = searchTerm === '' ||
         (musico.nombres && musico.nombres.toLowerCase().includes(searchTermLower)) ||
@@ -186,6 +190,20 @@ export default function Musicos() {
       const matchesInstrumento = instrumentoFilter === '' || musico.instrumento === instrumentoFilter;
 
       return matchesSearch && matchesInstrumento;
+    });
+
+    const sectionOrder = ['TROMPETA', 'CLARINETE', 'SAXO', 'BARITONO', 'TROMBON', 'TUBA', 'BOMBO', 'PLATILLO', 'TAMBOR'];
+    return filtered.sort((a, b) => {
+      const instrA = (a.instrumento || '').toUpperCase();
+      const instrB = (b.instrumento || '').toUpperCase();
+      
+      let indexA = sectionOrder.findIndex(s => instrA.includes(s));
+      let indexB = sectionOrder.findIndex(s => instrB.includes(s));
+      
+      if (indexA === -1) indexA = 999;
+      if (indexB === -1) indexB = 999;
+      
+      return indexA - indexB;
     });
   }, [musicos, searchTerm, instrumentoFilter]);
 
@@ -248,16 +266,18 @@ export default function Musicos() {
           </h1>
           <p className="text-gray-500 mt-1">Gestiona el personal, instrumentos y niveles.</p>
         </div>
-        <button 
-          onClick={() => {
-            setFormData(initialFormState); // Asegurarse de que el formulario esté vacío
-            setIsModalOpen(true);
-          }}
-          className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-xl font-medium transition-colors shadow-sm"
-        >
-          <Plus className="w-5 h-5" />
-          Nuevo Músico
-        </button>
+        {!['JEFE_SECCION', 'MUSICO'].includes(userRol) && (
+          <button 
+            onClick={() => {
+              setFormData(initialFormState); // Asegurarse de que el formulario esté vacío
+              setIsModalOpen(true);
+            }}
+            className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-xl font-medium transition-colors shadow-sm"
+          >
+            <Plus className="w-5 h-5" />
+            Nuevo Músico
+          </button>
+        )}
       </header>
       
       {/* Barra de Búsqueda y Filtros */}
@@ -282,13 +302,15 @@ export default function Musicos() {
             <option key={inst} value={inst}>{inst}</option>
           ))}
         </select>
-        <button
-          onClick={() => setIsReportModalOpen(true)}
-          className="col-span-1 md:col-span-1 flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-3 rounded-xl font-medium transition-colors shadow-sm"
-        >
-          <FileDown className="w-5 h-5" />
-          Generar Reporte
-        </button>
+        {!['JEFE_SECCION', 'MUSICO'].includes(userRol) && (
+          <button
+            onClick={() => setIsReportModalOpen(true)}
+            className="col-span-1 md:col-span-1 flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-3 rounded-xl font-medium transition-colors shadow-sm"
+          >
+            <FileDown className="w-5 h-5" />
+            Generar Reporte
+          </button>
+        )}
       </div>
 
       {/* Formato de Lista / Tabla (Estilo Excel) */}
@@ -402,7 +424,7 @@ export default function Musicos() {
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">Talla Camisa</label>
-                  <input type="text" name="talla_camisa" value={formData.talla_camisa} onChange={handleChange} placeholder="Ej: 38 o M"
+                  <input type="text" name="talla_camisa" value={formData.talla_camisa} onChange={handleChange} placeholder="Ej: 16 o M"
                     className="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all" />
                 </div>
                 <div>
@@ -660,6 +682,15 @@ export default function Musicos() {
             </div>
           </div>
         </div>
+      )}
+
+      {/* Notificación */}
+      {notification.show && (
+        <Notification
+          type={notification.type}
+          message={notification.message}
+          onClose={() => setNotification({ ...notification, show: false })}
+        />
       )}
     </div>
   );

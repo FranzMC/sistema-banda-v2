@@ -1,12 +1,19 @@
 import { useState } from 'react';
 import axios from 'axios';
-import { Music, ArrowRight, AlertCircle } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { Music, ArrowRight, AlertCircle, Eye, EyeOff } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
+import toast from 'react-hot-toast';
 
-export default function Login({ onLogin }) {
-  const [username, setUsername] = useState('');
+export default function Login() {
+  const [ci, setCi] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  
+  const navigate = useNavigate();
+  const { login } = useAuth();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -15,15 +22,28 @@ export default function Login({ onLogin }) {
 
     try {
       const baseURL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api/';
-      const response = await axios.post(`${baseURL}token/`, {
-        username,
-        password
-      });
-      localStorage.setItem('access_token', response.data.access);
-      localStorage.setItem('refresh_token', response.data.refresh);
-      onLogin(); // Ingreso exitoso
+      
+      // Determinar si es login por PIN (músicos) o username/password (administradores)
+      // Siempre enviamos username y password. El backend decidirá si autentica por CI/PIN o por Contraseña estándar.
+      const payload = {
+        username: ci,
+        password: password
+      };
+
+      const response = await axios.post(`${baseURL}auth/pin/`, payload);
+      
+      const userData = response.data.user || {};
+      login(userData, response.data.access, response.data.refresh);
+      
+      toast.success('Inicio de sesión exitoso');
+      navigate('/dashboard');
     } catch (err) {
-      setError('Credenciales inválidas o cuenta inactiva.');
+      console.error('Error de login:', err);
+      if (err.response && err.response.data && err.response.data.error) {
+        setError(err.response.data.error);
+      } else {
+        setError('Credenciales inválidas o cuenta inactiva.');
+      }
     } finally {
       setLoading(false);
     }
@@ -50,26 +70,36 @@ export default function Login({ onLogin }) {
 
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Usuario</label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Usuario o CI</label>
               <input 
                 type="text" 
                 className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
-                placeholder="Ej: director_banda"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
+                placeholder="Ej: admin o 12510285"
+                value={ci}
+                onChange={(e) => setCi(e.target.value)}
                 required
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Contraseña</label>
-              <input 
-                type="password" 
-                className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
-                placeholder="••••••••"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-              />
+              <label className="block text-sm font-medium text-gray-700 mb-2">PIN (4 dígitos del CI)</label>
+              <div className="relative">
+                <input 
+                  type={showPassword ? 'text' : 'password'}
+                  maxLength={4}
+                  className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all pr-12"
+                  placeholder="••••"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                >
+                  {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                </button>
+              </div>
             </div>
             <button type="submit" disabled={loading} className="w-full flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-4 rounded-xl transition-colors disabled:opacity-70">
               {loading ? 'Verificando...' : 'Ingresar al Sistema'}

@@ -15,37 +15,44 @@ class TieneModulo(permissions.BasePermission):
         return request.user.tiene_modulo(self.modulo_requerido)
 
 
-class EsPresidente(permissions.BasePermission):
+class BaseRolePermission(permissions.BasePermission):
+    """
+    Permiso base genérico por roles.
+    Subclases solo necesitan definir `allowed_roles`.
+    PRESIDENTE siempre tiene acceso.
+    """
+    allowed_roles = []
+
+    def has_permission(self, request, view):
+        if not request.user or not request.user.is_authenticated:
+            return False
+        return request.user.rol in self.allowed_roles
+
+
+class EsPresidente(BaseRolePermission):
     """Solo presidentes pueden acceder"""
-    def has_permission(self, request, view):
-        return request.user.is_authenticated and request.user.rol == 'PRESIDENTE'
+    allowed_roles = ['PRESIDENTE']
 
 
-class EsDirector(permissions.BasePermission):
+class EsDirector(BaseRolePermission):
     """Solo directores y presidentes pueden acceder"""
-    def has_permission(self, request, view):
-        return request.user.is_authenticated and request.user.rol in ['DIRECTOR', 'PRESIDENTE']
+    allowed_roles = ['DIRECTOR', 'PRESIDENTE']
 
 
-class EsSubdirector(permissions.BasePermission):
+class EsSubdirector(BaseRolePermission):
     """Solo subdirectores y presidentes pueden acceder"""
-    def has_permission(self, request, view):
-        return request.user.is_authenticated and request.user.rol in ['SUBDIRECTOR', 'PRESIDENTE']
+    allowed_roles = ['SUBDIRECTOR', 'PRESIDENTE']
 
 
-class EsJefeSeccion(permissions.BasePermission):
+class EsJefeSeccion(BaseRolePermission):
     """Solo jefes de sección y presidentes pueden acceder"""
-    def has_permission(self, request, view):
-        return request.user.is_authenticated and request.user.rol in ['JEFE_SECCION', 'PRESIDENTE']
+    allowed_roles = ['JEFE_SECCION', 'PRESIDENTE']
 
 
-class EsMusico(permissions.BasePermission):
-    """Solo músicos pueden acceder"""
-    def has_permission(self, request, view):
-        return request.user.is_authenticated and request.user.rol == 'MUSICO'
+class EsAdministrativo(BaseRolePermission):
+    """Solo roles administrativos (Presidente, Director, Subdirector) pueden acceder"""
+    allowed_roles = ['PRESIDENTE', 'DIRECTOR', 'SUBDIRECTOR']
 
 
-class EsDirectorOSubdirector(permissions.BasePermission):
-    """Solo directores, subdirectores y presidentes pueden acceder"""
-    def has_permission(self, request, view):
-        return request.user.is_authenticated and request.user.rol in ['DIRECTOR', 'SUBDIRECTOR', 'PRESIDENTE']
+# Alias para compatibilidad hacia atrás
+EsDirectorOSubdirector = EsAdministrativo

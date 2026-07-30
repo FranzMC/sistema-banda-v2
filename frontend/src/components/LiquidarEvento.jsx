@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import api from '../services/api';
-import { Calendar, Save, FileText, Upload, DollarSign, CheckCircle, Plus, X, Eye, EyeOff, Settings } from 'lucide-react';
+import { Calendar, Save, FileText, Upload, DollarSign, CheckCircle, Plus, X, Eye, EyeOff, Settings, Search } from 'lucide-react';
 import FileUploader from './FileUploader';
 import MultiFileUploader from './MultiFileUploader';
 import DescuentosResumenModal from './DescuentosResumenModal';
@@ -10,6 +10,9 @@ export default function LiquidarEvento({ eventos, musicos, selectedEvento, setSe
   const [datosMusicos, setDatosMusicos] = useState({});
   const [loading, setLoading] = useState(false);
   const [showAdvanced, setShowAdvanced] = useState(false);
+  const [isLiquidado, setIsLiquidado] = useState(false);
+  const [liquidacionInfo, setLiquidacionInfo] = useState(null);
+  const [musicosYaPagados, setMusicosYaPagados] = useState([]);
   
   const [columnasExtra, setColumnasExtra] = useState([]);
   const [showModalColumna, setShowModalColumna] = useState(false);
@@ -28,6 +31,7 @@ export default function LiquidarEvento({ eventos, musicos, selectedEvento, setSe
   // Estados para procesamiento batch de descuentos por sección
   const [isProcessingBatch, setIsProcessingBatch] = useState(false);
   const [showResumenModal, setShowResumenModal] = useState(false);
+  const [detalleMusicoModal, setDetalleMusicoModal] = useState(null);
   const [resultadosProcesamiento, setResultadosProcesamiento] = useState([]);
   const [totalGeneralDescuentos, setTotalGeneralDescuentos] = useState(0);
   const [showUploadPanel, setShowUploadPanel] = useState(true);
@@ -95,12 +99,22 @@ export default function LiquidarEvento({ eventos, musicos, selectedEvento, setSe
     if (!eventoId) return null;
     try {
       const persisted = window.localStorage.getItem(getPersistKey(eventoId));
-      return persisted ? JSON.parse(persisted) : null;
+      if (!persisted) return null;
+      const parsed = JSON.parse(persisted);
+      // Limpiar multas/adelantos del localStorage — siempre vienen frescos del API
+      if (parsed && parsed.datosMusicos) {
+        Object.keys(parsed.datosMusicos).forEach(id => {
+          delete parsed.datosMusicos[id].multas;
+          delete parsed.datosMusicos[id].adelantos;
+        });
+      }
+      return parsed;
     } catch (err) {
       console.error('Error restaurando estado de liquidación', err);
       return null;
     }
   };
+
 
   const persistCurrentState = (eventoId, state) => {
     if (!eventoId) return;
@@ -112,59 +126,212 @@ export default function LiquidarEvento({ eventos, musicos, selectedEvento, setSe
   };
 
   useEffect(() => {
-    if (selectedEvento) {
-      const restored = restorePersistedState(selectedEvento);
-      if (restored && restored.datosMusicos) {
-        setDatosMusicos(restored.datosMusicos);
-        setMusicosPagados(restored.musicosPagados || {});
-        setColumnasExtra(restored.columnasExtra || []);
-        setUploadWarnings(restored.uploadWarnings || []);
-        setPdfMultasFile(null);
-        setPdfAdelantosFile(null);
-        return;
-      }
-
-      const evento = eventos.find(e => e.id == selectedEvento);
-      const convocadosIds = evento ? evento.convocados : [];
-      const newDatos = {};
-      const pagadosInicial = {};
-      
-      musicos.filter(m => convocadosIds.includes(m.id)).forEach(musico => {
-         // Initialize musico data without abonos (handled in Financiamientos module)
-         newDatos[musico.id] = { acordado: '', multas: '', adelantos: '' };
-         pagadosInicial[musico.id] = false;
-      });
-      setDatosMusicos(newDatos);
-      setMusicosPagados(pagadosInicial);
-      setPdfMultasFile(null);
-      setPdfAdelantosFile(null);
-      setColumnasExtra([]);
-      setUploadWarnings([]);
-    } else {
+    if (!selectedEvento) {
       setDatosMusicos({});
       setMusicosPagados({});
       setColumnasExtra([]);
+      return;
     }
-  }, [selectedEvento, eventos, musicos, deudas]);
+
+    const initEvento = async (eventoId) => {
+      // 1. Construir estado base con todos los musicos convocados
+      const evento = eventos.find(e => e.id == eventoId);
+      const convocadosIds = evento ? evento.convocados : [];
+      const baseDatos = {};
+      const pagadosInicial = {};
+
+      musicos.filter(m => convocadosIds.includes(m.id)).forEach(musico => {
+        baseDatos[musico.id] = { acordado: '', multas: '', adelantos: '' };
+        pagadosInicial[musico.id] = false;
+      });
+
+      // 2. Recuperar datos persistidos (solo para acordado, columnas extra y estado pagado)
+      //    NUNCA usamos el localStorage para multas/adelantos — esos vienen frescos del API
+      const restored = restorePersistedState(eventoId);
+      if (restored && restored.datosMusicos) {
+        Object.keys(baseDatos).forEach(musicoId => {
+          const persisted = restored.datosMusicos[musicoId];
+          if (persisted) {
+            // Solo restauramos 'acordado' y las columnas extra del localStorage
+            baseDatos[musicoId].acordado = persisted.acordado || '';
+            // Copiar columnas extra si existen
+            Object.keys(persisted).forEach(key => {
+              if (key !== 'acordado' && key !== 'multas' && key !== 'adelantos') {
+                baseDatos[musicoId][key] = persisted[key];
+              }
+            });
+          }
+        });
+        if (restored.musicosPagados) {
+          Object.assign(pagadosInicial, restored.musicosPagados);
+        }
+        if (restored.columnasExtra) {
+          setColumnasExtra(restored.columnasExtra);
+        } else {
+          setColumnasExtra([]);
+        }
+        if (restored.uploadWarnings) {
+          setUploadWarnings(restored.uploadWarnings);
+        } else {
+          setUploadWarnings([]);
+        }
+      } else {
+        setColumnasExtra([]);
+        setUploadWarnings([]);
+      }
+
+      // 3. Establecer el estado base ANTES de llamar al API
+      setDatosMusicos(baseDatos);
+      setMusicosPagados(pagadosInicial);
+      setPdfMultasFile(null);
+      setPdfAdelantosFile(null);
+      setIsLiquidado(false);
+      setLiquidacionInfo(null);
+      setMusicosYaPagados([]);
+
+      // 4. Cargar datos frescos del API (multas y adelantos SIEMPRE desde el servidor)
+      try {
+        const [resLiquidacion, resGastos] = await Promise.all([
+          api.get(`/eventos/${eventoId}/liquidacion/`),
+          api.get(`/eventos/${eventoId}/resumen_gastos/`)
+        ]);
+
+        if (resLiquidacion.data.is_liquidado) {
+          setIsLiquidado(true);
+          setLiquidacionInfo({
+            fecha: resLiquidacion.data.fecha_liquidacion,
+            origen: resLiquidacion.data.origen,
+            registradoPor: resLiquidacion.data.registrado_por
+          });
+          setMusicosYaPagados(resLiquidacion.data.musicos_pagados || []);
+          
+          // Poblar con los datos reales guardados en la liquidacion
+          setDatosMusicos(prev => {
+            const newDatos = { ...prev };
+            resLiquidacion.data.detalles.forEach(d => {
+               newDatos[d.musico_id] = {
+                 acordado: parseFloat(d.acordado) > 0 ? Math.round(d.acordado).toString() : '',
+                 multas: parseFloat(d.multas) > 0 ? Math.round(d.multas).toString() : '',
+                 adelantos: parseFloat(d.adelantos) > 0 ? Math.round(d.adelantos).toString() : '',
+                 fecha_pago: d.fecha_pago,
+                 origen: d.origen,
+                 registrado_por: d.registrado_por,
+               };
+            });
+            return newDatos;
+          });
+          // No detenemos el flujo, permitimos que se cargue resumen_gastos para los no pagados
+        }
+
+        const resumen = resGastos.data;
+
+        // El API devuelve musico_id como INTEGER, baseDatos usa musico.id (number)
+        // Normalizamos comparando como string para evitar bugs de tipo
+        setDatosMusicos(prev => {
+          const newDatos = { ...prev };
+
+          Object.entries(resumen).forEach(([musicoIdStr, datos]) => {
+            // Buscar la key correcta en newDatos (puede ser number o string)
+            // Intentar directamente con el valor del API y su version string
+            const key = newDatos.hasOwnProperty(musicoIdStr)
+              ? musicoIdStr
+              : newDatos.hasOwnProperty(Number(musicoIdStr))
+              ? Number(musicoIdStr)
+              : null;
+
+            if (key !== null) {
+              // Si ya esta pagado en la bd, no sobreescribir con resumen
+              if (resLiquidacion.data?.musicos_pagados?.includes(Number(key))) {
+                 return;
+              }
+
+              const multasVal = parseFloat(datos.multas || 0);
+              const adelantosVal = parseFloat(datos.adelantos || 0);
+              newDatos[key] = {
+                ...newDatos[key],
+                // Solo actualizar si el valor del API es mayor a 0
+                multas: multasVal > 0 ? Math.round(multasVal).toString() : (newDatos[key].multas || ''),
+                adelantos: adelantosVal > 0 ? Math.round(adelantosVal).toString() : (newDatos[key].adelantos || ''),
+              };
+            }
+          });
+
+          return newDatos;
+        });
+      } catch (error) {
+        console.error('Error cargando datos del evento:', error);
+      }
+    };
+
+    initEvento(selectedEvento);
+  }, [selectedEvento, eventos, musicos]);
+
 
   useEffect(() => {
     if (!selectedEvento) return;
+    // Guardamos solo acordado y columnas extra — multas y adelantos siempre vienen del API
+    const datosParaGuardar = {};
+    Object.entries(datosMusicos).forEach(([musicoId, datos]) => {
+      const { multas, adelantos, ...resto } = datos;
+      datosParaGuardar[musicoId] = resto;
+    });
     persistCurrentState(selectedEvento, {
-      datosMusicos,
+      datosMusicos: datosParaGuardar,
       columnasExtra,
       uploadWarnings,
       musicosPagados
     });
   }, [selectedEvento, datosMusicos, columnasExtra, uploadWarnings, musicosPagados]);
 
+
+  const [loadingIndividual, setLoadingIndividual] = useState(false);
+
   const handleAbrirModalPago = (musico) => {
       setMusicoSeleccionadoParaPago(musico);
   };
 
-  const handleConfirmarPagoModal = (musicoId) => {
-      setMusicosPagados(prev => ({ ...prev, [musicoId]: true }));
-      setMusicoSeleccionadoParaPago(null);
-      alert("PAGO REALIZADO Y LISTO");
+  const handleGuardarIndividual = async (musicoId) => {
+      setLoadingIndividual(true);
+      try {
+          const deudasMusico = deudas.filter(d => d.musico == musicoId);
+          const a = parseInt(datosMusicos[musicoId]?.acordado || 0);
+          const m = parseInt(datosMusicos[musicoId]?.multas || 0);
+          const ad = parseInt(datosMusicos[musicoId]?.adelantos || 0);
+          
+          if (a === 0 && m === 0 && ad === 0) {
+              alert("Debes ingresar un monto Acordado, Adelanto o Descuento para guardar.");
+              setLoadingIndividual(false);
+              return;
+          }
+
+          const payload = {
+              evento_id: selectedEvento,
+              titulo: `Liquidación - ${eventos.find(e => e.id == selectedEvento)?.titulo}`,
+              origen: 'FRONTEND',
+              musicos: [{
+                  musico_id: musicoId,
+                  acordado: a,
+                  multas: m,
+                  adelantos: ad,
+                  descuentos_extra: columnasExtra.map(col => ({
+                      nombre: col.nombre,
+                      monto: parseInt(datosMusicos[musicoId]?.[col.id] || 0)
+                  })).filter(col => col.monto > 0),
+                  deudas_saldadas: deudasMusico.map(d => d.id)
+              }]
+          };
+
+          await api.post('/planillas/liquidar_directo/', payload);
+          setMusicosYaPagados(prev => [...prev, musicoId]);
+          setMusicosPagados(prev => ({ ...prev, [musicoId]: true }));
+          setMusicoSeleccionadoParaPago(null);
+          setNotification({ type: 'success', message: 'Pago guardado exitosamente.' });
+      } catch(err) {
+          console.error(err);
+          alert("Error al guardar el pago: " + JSON.stringify(err.response?.data || err.message));
+      } finally {
+          setLoadingIndividual(false);
+      }
   };
 
   const handleDesmarcarPago = (musicoId) => {
@@ -498,10 +665,13 @@ export default function LiquidarEvento({ eventos, musicos, selectedEvento, setSe
     
     setLoading(true);
 
+    const musicosAEnviar = Object.keys(datosMusicos).filter(id => !musicosYaPagados.includes(Number(id)));
+
     const payload = {
        evento_id: selectedEvento,
        titulo: `Liquidación - ${eventos.find(e => e.id == selectedEvento)?.titulo}`,
-       musicos: Object.keys(datosMusicos).map(musicoId => {
+       origen: 'FRONTEND',
+       musicos: musicosAEnviar.map(musicoId => {
            const deudasMusico = deudas.filter(d => d.musico == musicoId);
            return {
                musico_id: musicoId,
@@ -587,77 +757,35 @@ export default function LiquidarEvento({ eventos, musicos, selectedEvento, setSe
     <div className="">
       {selectedEvento && (
       <div className="space-y-4 animate-in fade-in duration-300">
-           {/* Sección de Herramientas de Liquidación */}
-           <div className="bg-gradient-to-r from-slate-50 to-gray-50 rounded-xl p-6 border border-gray-200 shadow-sm">
-              <div className="flex items-center justify-between mb-6">
-                 <div className="flex items-center gap-3">
-                    <Settings className="w-6 h-6 text-gray-600" />
-                    <h2 className="text-lg font-bold text-gray-800">Herramientas de Liquidación</h2>
-                 </div>
-                 <button 
-                    onClick={() => setShowModalColumna(true)}
-                    className="bg-purple-600 hover:bg-purple-700 text-white px-5 py-2.5 rounded-xl font-bold transition-all shadow-sm flex items-center gap-2"
-                 >
-                    <Plus className="w-5 h-5" />
-                    <span>Nuevo Descuento</span>
-                 </button>
-              </div>
 
-              <div className="flex flex-col gap-4">
-                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                    <div>
-                      <h3 className="text-lg font-bold text-gray-800">Herramientas de carga</h3>
-                      <p className="text-sm text-gray-500">Sube los PDFs por sección y los adelantos. Luego oculta este panel para ver mejor el tablero.</p>
-                    </div>
-                    <button
-                      onClick={() => setShowUploadPanel(!showUploadPanel)}
-                      className="inline-flex items-center justify-center rounded-xl border border-slate-300 bg-white px-4 py-2 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50"
-                    >
-                      {showUploadPanel ? 'Ocultar panel de carga' : 'Mostrar panel de carga'}
-                    </button>
-                 </div>
 
-                 {showUploadPanel && (
-                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      <MultiFileUploader
-                         title="PDF Descuentos por Sección"
-                         color="red"
-                         onUpload={handleBatchDescuentosUpload}
-                         accept=".pdf,.xlsx,.xls"
-                         isProcessing={isProcessingBatch}
-                      />
-
-                      <FileUploader
-                         title="💰 PDF Adelantos (Directiva)"
-                         color="orange"
-                         onUpload={(file) => {
-                           setPdfAdelantosFile(file);
-                           handlePdfUpload(file, 'adelantos');
-                         }}
-                         accept=".pdf,.xlsx,.xls"
-                         isProcessing={isPdfAdelantosProcessing}
-                         clearFile={clearAdelantosFile}
-                      />
+           {/* Barra de Herramientas de Liquidación */}
+           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
+              <div className="flex items-center gap-3 w-full sm:w-auto">
+                 <div className="relative w-full sm:w-80">
+                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                     <Search className="h-4 w-4 text-gray-400" />
                    </div>
-                 )}
-
-                 <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                    <div>
-                      <label htmlFor="searchMusico" className="text-sm font-semibold text-slate-700">Buscar músico</label>
-                      <p className="text-xs text-slate-500">Filtra la tabla por nombre completo</p>
-                    </div>
-                    <input
-                      id="searchMusico"
-                      value={searchTerm}
-                      onChange={e => setSearchTerm(e.target.value)}
-                      placeholder="Buscar por nombre..."
-                      className="w-full sm:w-80 rounded-2xl border border-slate-300 bg-white py-3 px-4 text-sm shadow-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
-                    />
+                   <input
+                     id="searchMusico"
+                     value={searchTerm}
+                     onChange={e => setSearchTerm(e.target.value)}
+                     placeholder="Buscar músico por nombre..."
+                     className="w-full rounded-lg border border-slate-300 bg-white py-2 pl-10 pr-4 text-sm shadow-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+                   />
                  </div>
               </div>
+              <button 
+                 onClick={() => setShowModalColumna(true)}
+                 className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg font-bold transition-all shadow-sm flex items-center gap-2 text-sm whitespace-nowrap"
+              >
+                 <Plus className="w-4 h-4" />
+                 <span>Nuevo Descuento</span>
+              </button>
+           </div>
 
-              {uploadWarnings.length > 0 && (
-                 <div className="mt-6 p-4 bg-yellow-50 border border-yellow-200 rounded-xl text-yellow-900">
+           {uploadWarnings.length > 0 && (
+                 <div className="mb-4 p-4 bg-yellow-50 border border-yellow-200 rounded-xl text-yellow-900">
                     <h3 className="font-bold text-yellow-900 text-sm mb-3">Advertencias de carga</h3>
                     <ul className="list-disc list-inside text-sm space-y-1">
                       {uploadWarnings.map((warning, index) => (
@@ -665,9 +793,7 @@ export default function LiquidarEvento({ eventos, musicos, selectedEvento, setSe
                       ))}
                     </ul>
                  </div>
-              )}
-
-           </div>
+           )}
             <div className="border border-gray-200 rounded-xl shadow-sm overflow-x-auto overflow-y-auto bg-white" style={{ maxHeight: 'calc(100vh - 8rem)' }}>
                <table className="w-full min-w-full text-sm text-left table-fixed">
                   <thead className="bg-gray-800 text-white sticky top-0 z-20 shadow-md">
@@ -691,6 +817,7 @@ export default function LiquidarEvento({ eventos, musicos, selectedEvento, setSe
                         ))}
                         <th className="px-4 py-4 font-bold border-b text-right w-28 text-orange-300 uppercase text-xs tracking-wider">Adelanto</th>
                         <th className="px-4 py-4 font-bold border-b text-right w-36 text-white uppercase text-xs tracking-wider">SALDO</th>
+                        <th className="px-4 py-4 font-bold border-b text-center w-28 uppercase text-xs tracking-wider text-green-300">ACCIÓN</th>
                      </tr>
                   </thead>
                   
@@ -702,7 +829,7 @@ export default function LiquidarEvento({ eventos, musicos, selectedEvento, setSe
                         return (
                            <tbody key={grupo.key} className="divide-y divide-gray-100">
                               <tr>
-                                 <td colSpan={5 + columnasExtra.length} className="bg-gray-100 px-4 py-2 font-black text-gray-700 border-y border-gray-200 sticky left-0">
+                                 <td colSpan={6 + columnasExtra.length} className="bg-gray-100 px-4 py-2 font-black text-gray-700 border-y border-gray-200 sticky left-0">
                                     {grupo.titulo}
                                  </td>
                               </tr>
@@ -718,21 +845,18 @@ export default function LiquidarEvento({ eventos, musicos, selectedEvento, setSe
 
                                  const final = a - m - ad - extraLocal;
                                  
-                                 const isPagado = musicosPagados[musico.id];
+                                 const isMusicoYaPagado = musicosYaPagados.includes(musico.id);
+                                 const isPagado = isMusicoYaPagado || musicosPagados[musico.id];
 
                                  return (
                                  <React.Fragment key={musico.id}>
                                     <tr className={`transition-colors ${isPagado ? 'bg-green-50/50' : 'hover:bg-gray-50'}`}>
                                        <td className={`px-4 py-3 font-bold border-r border-gray-100 sticky left-0 z-10 ${isPagado ? 'bg-green-50 text-green-900' : 'bg-white text-gray-800'}`}>
-                                           <div className="flex items-start gap-2">
-                                               <button onClick={() => isPagado ? handleDesmarcarPago(musico.id) : handleAbrirModalPago(musico)} className={`mt-0.5 p-1.5 rounded-lg transition-colors ${isPagado ? 'bg-green-600 text-white' : 'bg-gray-100 text-gray-500 hover:bg-gray-200 hover:text-gray-800'}`} title={isPagado ? "Desmarcar pagado" : "Ver recibo y marcar pagado"}>                                                   {isPagado ? <CheckCircle className="w-5 h-5"/> : <Eye className="w-5 h-5"/>}
-                                               </button>
-                                               <div className="flex flex-col">
-                                                   <span>{musico.nombres} {musico.apellidos}</span>
-                                                   {deudas.filter(d => d.musico == musico.id).map(d => (
-                                                       <span key={d.id} className="text-[10px] text-red-500 font-bold mt-0.5 leading-tight">Deuda: {d.motivo} (Bs. {d.saldo_restante})</span>
-                                                   ))}
-                                               </div>
+                                           <div className="flex flex-col">
+                                               <span>{musico.nombres} {musico.apellidos}</span>
+                                               {deudas.filter(d => d.musico == musico.id).map(d => (
+                                                   <span key={d.id} className="text-[10px] text-red-500 font-bold mt-0.5 leading-tight">Deuda: {d.motivo} (Bs. {d.saldo_restante})</span>
+                                               ))}
                                            </div>
                                        </td>
                                        <td className="px-2 py-2">
@@ -752,6 +876,22 @@ export default function LiquidarEvento({ eventos, musicos, selectedEvento, setSe
                                        <td className={`px-4 py-3 text-right font-black text-lg ${final >= 0 ? (isPagado ? 'text-green-800' : 'text-green-700 bg-green-50/30') : (isPagado ? 'text-red-800' : 'text-red-600 bg-red-50/30')}`}>
                                           Bs. {final.toLocaleString('es-VE', { maximumFractionDigits: 0 })}
                                        </td>
+                                       <td className="px-2 py-2 text-center">
+                                           <button 
+                                              onClick={() => {
+                                                  if (isMusicoYaPagado) {
+                                                      setDetalleMusicoModal(musico);
+                                                  } else if (!isPagado) {
+                                                      handleAbrirModalPago(musico);
+                                                  }
+                                              }} 
+                                              disabled={isPagado && !isMusicoYaPagado}
+                                              className={`w-full py-2 rounded-lg font-bold text-xs flex justify-center items-center gap-1 transition-all shadow-sm ${isMusicoYaPagado ? 'bg-green-100 text-green-700 hover:bg-green-200' : (isPagado ? 'bg-gray-100 text-gray-400' : 'bg-green-600 text-white hover:bg-green-700 hover:-translate-y-0.5')}`}
+                                           >
+                                              {isMusicoYaPagado ? <Eye className="w-4 h-4"/> : <CheckCircle className="w-4 h-4"/>}
+                                              {isMusicoYaPagado ? 'Ver' : (isPagado ? 'Pagado' : 'Pagar')}
+                                           </button>
+                                       </td>
                                     </tr>
                                  </React.Fragment>
                               )})}
@@ -761,7 +901,7 @@ export default function LiquidarEvento({ eventos, musicos, selectedEvento, setSe
                   ) : (
                      <tbody>
                         <tr>
-                           <td colSpan={5 + columnasExtra.length} className="px-4 py-8 text-center text-gray-500">
+                           <td colSpan={6 + columnasExtra.length} className="px-4 py-8 text-center text-gray-500">
                               {searchTerm ? 'No se encontraron músicos con ese nombre.' : 'No hay músicos convocados para este evento.'}
                            </td>
                         </tr>
@@ -790,13 +930,14 @@ export default function LiquidarEvento({ eventos, musicos, selectedEvento, setSe
                            ))}
                            <td className="px-4 py-4 font-black text-right text-orange-400 text-lg align-top">-Bs. {totalAdelantos.toLocaleString('es-VE', { maximumFractionDigits: 0 })}</td>
                            <td className="px-4 py-4 font-black text-right text-white text-2xl align-top">Bs. {totalPagar.toLocaleString('es-VE', { maximumFractionDigits: 0 })}</td>
+                           <td className="px-4 py-4 bg-gray-800"></td>
                         </tr>
                      </tfoot>
                   )}
                </table>
             </div>
 
-            {musicosList.length > 0 && (
+            {musicosList.length > 0 && musicosYaPagados.length < musicosList.length && (
                <div className="flex justify-end pt-4 pb-12">
                   <button 
                      onClick={handleGuardar}
@@ -804,11 +945,100 @@ export default function LiquidarEvento({ eventos, musicos, selectedEvento, setSe
                      className="bg-green-600 hover:bg-green-700 text-white font-black py-4 px-10 rounded-xl flex items-center gap-3 transition-all disabled:opacity-50 shadow-lg transform hover:-translate-y-1 text-lg"
                   >
                      <CheckCircle className="w-6 h-6" />
-                     {loading ? 'Guardando y Consolidando...' : 'Guardar y Consolidar Planilla'}
+                     {loading ? 'Guardando y Consolidando...' : 'Guardar y Consolidar Restantes'}
                   </button>
                </div>
             )}
          </div>
+      )}
+
+      {/* Modal Detalle de Pago */}
+      {detalleMusicoModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <div className="bg-white rounded-2xl w-full max-w-md shadow-xl animate-in fade-in zoom-in-95 p-6">
+            <h3 className="text-xl font-bold text-gray-800 mb-4 border-b pb-2 flex items-center gap-2">
+              <CheckCircle className="w-6 h-6 text-green-600" />
+              Detalles del Pago
+            </h3>
+            
+            {(() => {
+                const musico = detalleMusicoModal;
+                const d = datosMusicos[musico.id] || {};
+                
+                // Formatear fecha si existe
+                let fechaFormateada = 'Desconocida';
+                if (d.fecha_pago) {
+                    fechaFormateada = new Date(d.fecha_pago).toLocaleString('es-BO');
+                }
+                
+                // Calcular total Neto
+                const sumExtras = columnasExtra.reduce((sum, col) => sum + parseFloat(d[col.id] || 0), 0);
+                const neto = parseFloat(d.acordado || 0) - parseFloat(d.multas || 0) - parseFloat(d.adelantos || 0) - sumExtras;
+
+                return (
+                    <div className="space-y-4">
+                        <div>
+                            <p className="text-sm text-gray-500 uppercase font-bold tracking-wider">Músico</p>
+                            <p className="font-bold text-lg text-gray-800">{musico.nombres} {musico.apellidos}</p>
+                        </div>
+                        
+                        <div className="grid grid-cols-2 gap-4 bg-gray-50 p-3 rounded-lg">
+                            <div>
+                                <p className="text-xs text-gray-500 font-bold uppercase">Registrado Por</p>
+                                <p className="font-semibold text-gray-700">{d.registrado_por || 'Desconocido'}</p>
+                            </div>
+                            <div>
+                                <p className="text-xs text-gray-500 font-bold uppercase">Medio / Origen</p>
+                                <p className="font-semibold text-gray-700">{d.origen || 'Desconocido'}</p>
+                            </div>
+                            <div className="col-span-2">
+                                <p className="text-xs text-gray-500 font-bold uppercase">Fecha y Hora</p>
+                                <p className="font-semibold text-gray-700">{fechaFormateada}</p>
+                            </div>
+                        </div>
+
+                        <div className="border border-gray-100 rounded-lg p-3 space-y-2">
+                            <div className="flex justify-between items-center text-sm">
+                                <span className="font-medium text-gray-600">Total Acordado:</span>
+                                <span className="font-bold">Bs. {d.acordado || 0}</span>
+                            </div>
+                            <div className="flex justify-between items-center text-sm text-red-600">
+                                <span className="font-medium">Total Descuentos:</span>
+                                <span className="font-bold">- Bs. {d.multas || 0}</span>
+                            </div>
+                            <div className="flex justify-between items-center text-sm text-orange-600">
+                                <span className="font-medium">Total Adelantos:</span>
+                                <span className="font-bold">- Bs. {d.adelantos || 0}</span>
+                            </div>
+                            
+                            {columnasExtra.map(col => (
+                                parseFloat(d[col.id]) > 0 && (
+                                    <div key={col.id} className="flex justify-between items-center text-sm text-blue-600">
+                                        <span className="font-medium">{col.nombre}:</span>
+                                        <span className="font-bold">- Bs. {d[col.id]}</span>
+                                    </div>
+                                )
+                            ))}
+                            
+                            <div className="pt-2 border-t mt-2 flex justify-between items-center">
+                                <span className="font-black text-gray-800">TOTAL CANCELADO:</span>
+                                <span className="font-black text-xl text-green-700">Bs. {neto}</span>
+                            </div>
+                        </div>
+
+                        <div className="flex justify-end pt-2">
+                            <button 
+                                onClick={() => setDetalleMusicoModal(null)}
+                                className="px-5 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold rounded-xl transition-colors"
+                            >
+                                Cerrar
+                            </button>
+                        </div>
+                    </div>
+                );
+            })()}
+          </div>
+        </div>
       )}
 
       {/* Modal Nueva Columna */}
@@ -960,11 +1190,12 @@ export default function LiquidarEvento({ eventos, musicos, selectedEvento, setSe
                       Cancelar
                    </button>
                    <button 
-                      onClick={() => handleConfirmarPagoModal(musico.id)}
-                      className="flex-[2] py-3 bg-green-600 hover:bg-green-700 text-white font-black rounded-xl transition-colors shadow-sm flex items-center justify-center gap-2 text-sm transform hover:-translate-y-0.5"
-                   >
-                      <CheckCircle className="w-5 h-5"/> Pagar al Músico
-                   </button>
+                        onClick={() => handleGuardarIndividual(musico.id)}
+                        disabled={loadingIndividual}
+                        className="flex-[2] py-3 bg-green-600 hover:bg-green-700 text-white font-black rounded-xl transition-colors shadow-sm flex items-center justify-center gap-2 text-sm transform hover:-translate-y-0.5 disabled:opacity-50"
+                     >
+                        <CheckCircle className="w-5 h-5"/> {loadingIndividual ? 'Guardando...' : 'Guardar Pago'}
+                     </button>
                 </div>
               </div>
             </div>

@@ -1,8 +1,9 @@
 import axios from 'axios';
+import toast from 'react-hot-toast';
 
 const api = axios.create({
   baseURL: import.meta.env.VITE_API_URL || 'http://localhost:8000/api/',
-  timeout: 10000,
+  timeout: 30000,
   headers: {
     'Content-Type': 'application/json',
   },
@@ -39,7 +40,7 @@ api.interceptors.request.use(
   }
 );
 
-// Interceptor de respuestas CON REFRESH AUTOMÁTICO
+// Interceptor de respuestas CON REFRESH AUTOMÁTICO Y TOASTS
 api.interceptors.response.use(
   (response) => {
     return response;
@@ -99,10 +100,23 @@ api.interceptors.response.use(
       } catch (refreshError) {
         // Error al refrescar, limpiar sesión y ir a login
         localStorage.clear();
+        toast.error('Sesión expirada. Por favor ingresa de nuevo.');
         window.location.href = '/login';
         processQueue(refreshError, null);
         return Promise.reject(refreshError);
       }
+    }
+
+    // Mostrar un toast para errores 400 y 500 globalmente si no se silencian
+    if (error.response) {
+      if (error.response.status === 400 && !originalRequest.url.includes('/auth/pin/')) {
+        const errorMsg = error.response.data?.error || 'Solicitud incorrecta';
+        toast.error(errorMsg);
+      } else if (error.response.status >= 500) {
+        toast.error('Error interno del servidor');
+      }
+    } else if (error.request) {
+      toast.error('No se pudo conectar al servidor');
     }
 
     return Promise.reject(error);

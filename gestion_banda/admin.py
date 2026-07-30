@@ -37,8 +37,8 @@ class MusicoAdmin(admin.ModelAdmin):
 
 @admin.register(Evento)
 class EventoAdmin(admin.ModelAdmin):
-    list_display = ('titulo', 'uniforme_display', 'fecha_hora_cita', 'lugar_concentracion', 'responsable')
-    list_filter = ('uniforme', 'responsable')
+    list_display = ('titulo', 'uniforme_display', 'fecha_hora_cita', 'lugar_concentracion')
+    list_filter = ('uniforme',)
     search_fields = ('titulo', 'lugar_concentracion')
     ordering = ('-fecha_hora_cita',)
     filter_horizontal = ('convocados',)
@@ -51,8 +51,8 @@ class EventoAdmin(admin.ModelAdmin):
 
 @admin.register(Asistencia)
 class AsistenciaAdmin(admin.ModelAdmin):
-    list_display = ('musico', 'evento', 'estado', 'hora_llegada', 'minutos_tardanza', 'monto_acordado', 'estado')
-    list_filter = ('estado', 'estado', 'evento__fecha_hora_cita')
+    list_display = ('musico', 'evento', 'estado', 'hora_llegada', 'minutos_tardanza', 'monto_acordado')
+    list_filter = ('estado', 'evento__fecha_hora_cita')
     search_fields = ('musico__nombres', 'musico__apellidos', 'evento__titulo')
     ordering = ('-evento__fecha_hora_cita', 'musico__apellidos')
     list_editable = ('monto_acordado', 'estado')

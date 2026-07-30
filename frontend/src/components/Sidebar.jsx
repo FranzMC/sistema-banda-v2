@@ -1,19 +1,53 @@
 import { NavLink } from 'react-router-dom';
-import { LayoutDashboard, Users, CalendarDays, FileText, Trophy, LogOut, Music, TrendingDown, TrendingUp, DollarSign, Shield, Key } from 'lucide-react';
+import { LayoutDashboard, Users, CalendarDays, FileText, Trophy, LogOut, Music, TrendingDown, TrendingUp, DollarSign, Key } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
 
-export default function Sidebar({ onLogout }) {
-  const menuItems = [
-    { path: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
-    { path: '/musicos', icon: Users, label: 'Músicos' },
-    { path: '/eventos', icon: CalendarDays, label: 'Relacion Nominal/Contratos' },
-    { path: '/finanzas', icon: FileText, label: 'Liquidaciones' },
-    { path: '/financiamientos', icon: DollarSign, label: 'Financiamientos' },
-    { path: '/descuentos-seccion', icon: TrendingDown, label: 'Descuentos por Sección' },
-    { path: '/adelantos-seccion', icon: TrendingUp, label: 'Adelantos por Sección' },
-    { path: '/usuarios', icon: Key, label: 'Usuarios & Roles' },
-    { path: '/permisos', icon: Shield, label: 'Permisos' },
-    { path: '/canaston', icon: Trophy, label: 'Canastón' },
+export default function Sidebar() {
+  const { user, logout } = useAuth();
+  
+  // En lugar de hacer una petición manual, usamos los datos del usuario logueado
+  const userModules = user?.modulos || [];
+  const loading = !user;
+
+  const allMenuItems = [
+    { path: '/dashboard', icon: LayoutDashboard, label: 'Dashboard', moduleKey: 'DASHBOARD' },
+    { path: '/musicos', icon: Users, label: 'Músicos', moduleKey: 'MUSICOS' },
+    { path: '/eventos', icon: CalendarDays, label: 'Relación Nominal / Eventos', moduleKey: 'EVENTOS' },
+    { path: '/finanzas', icon: FileText, label: 'Liquidaciones', moduleKey: 'LIQUIDACIONES' },
+    { path: '/financiamientos', icon: DollarSign, label: 'Financiamientos', moduleKey: 'FINANCIAMIENTO' },
+    { path: '/descuentos-seccion', icon: TrendingDown, label: 'Descuentos por Sección', moduleKey: 'DESCUENTOS' },
+    { path: '/adelantos-seccion', icon: TrendingUp, label: 'Adelantos por Sección', moduleKey: 'ADELANTOS' },
+    { path: '/usuarios', icon: Key, label: 'Usuarios & Roles', moduleKey: 'ADMIN_USUARIOS' },
+    { path: '/canaston', icon: Trophy, label: 'Canastón', moduleKey: 'CANASTON' },
+    { path: '/mi-resumen', icon: DollarSign, label: 'Mi Resumen', moduleKey: 'MI_RESUMEN' },
+    { path: '/mis-multas', icon: TrendingDown, label: 'Mis Multas', moduleKey: 'MIS_MULTAS' },
+    { path: '/mis-contratos', icon: FileText, label: 'Mis Contratos', moduleKey: 'MIS_CONTRATOS' },
+    { path: '/configuracion', icon: Key, label: 'Mi Perfil (Configuración)', moduleKey: 'CONFIGURACION' },
   ];
+
+  const getMenuItemsByRole = (rol) => {
+    switch(rol) {
+      case 'PRESIDENTE':
+      case 'PRESIDENTE FUNDADOR':
+        return allMenuItems.filter(i => !['MIS_MULTAS', 'MIS_CONTRATOS'].includes(i.moduleKey));
+      case 'DIRECTOR':
+      case 'SUBDIRECTOR':
+        return allMenuItems.filter(i => !['ADMIN_USUARIOS', 'MIS_MULTAS', 'MIS_CONTRATOS'].includes(i.moduleKey));
+      case 'JEFE_SECCION':
+        return allMenuItems.filter(i => ['DASHBOARD', 'MUSICOS', 'EVENTOS', 'DESCUENTOS', 'CONFIGURACION'].includes(i.moduleKey));
+      case 'MUSICO':
+        return allMenuItems.filter(i => ['DASHBOARD', 'EVENTOS', 'MI_RESUMEN', 'MIS_MULTAS', 'MIS_CONTRATOS', 'CONFIGURACION'].includes(i.moduleKey)).map(item => {
+          if (item.moduleKey === 'EVENTOS') {
+            return { ...item, label: 'Relación Nominal' }; // Rename specific for Musico
+          }
+          return item;
+        });
+      default:
+        return allMenuItems.filter(i => ['DASHBOARD', 'CONFIGURACION'].includes(i.moduleKey));
+    }
+  };
+
+  const menuItems = loading ? [] : getMenuItemsByRole(user?.rol);
 
   return (
     <aside className="w-72 bg-white border-r border-gray-200 flex flex-col h-screen">
@@ -46,12 +80,6 @@ export default function Sidebar({ onLogout }) {
         ))}
       </nav>
 
-      <div className="p-4 border-t border-gray-100">
-        <button onClick={onLogout} className="flex items-center gap-3 px-4 py-3 w-full rounded-xl text-red-600 font-medium hover:bg-red-50 transition-colors">
-          <LogOut className="w-5 h-5" />
-          Cerrar Sesión
-        </button>
-      </div>
     </aside>
   );
 }

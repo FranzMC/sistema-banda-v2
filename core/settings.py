@@ -14,24 +14,25 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 # Initialize environment variables
 env = environ.Env(
-    DEBUG=(bool, True),
-    ACCESS_TOKEN_LIFETIME=(int, 3600),
-    REFRESH_TOKEN_LIFETIME=(int, 2592000),
+    DEBUG=(bool, False),
+    ACCESS_TOKEN_LIFETIME=(int, 1800),       # 30 minutos
+    REFRESH_TOKEN_LIFETIME=(int, 2592000),   # 30 días
 )
-# Especificar la ruta al archivo .env
-environ.Env.read_env(os.path.join(BASE_DIR, '.env'))
 
+# Leer archivo .env si existe
+env_file = BASE_DIR / '.env'
+if env_file.exists():
+    environ.Env.read_env(str(env_file))
 
-# Quick-start development settings - unsuitable for production
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = env('SECRET_KEY', default='django-insecure-flr3)+-%6t7&n%lhiv+ge!w*5g(5m+1l$^@cmy9c+s1ap6d_6f')
+SECRET_KEY = env('SECRET_KEY', default='django-insecure-dev-only-change-in-production')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = env('DEBUG')
 
 # Parse ALLOWED_HOSTS as a list
-_allowed_hosts = env('ALLOWED_HOSTS', default='localhost,127.0.0.1,0.0.0.0,web')
+_allowed_hosts = env('ALLOWED_HOSTS', default='localhost,127.0.0.1,0.0.0.0')
 ALLOWED_HOSTS = [h.strip() for h in _allowed_hosts.split(',')] if isinstance(_allowed_hosts, str) else _allowed_hosts
 
 
@@ -47,13 +48,15 @@ INSTALLED_APPS = [
     'corsheaders',
     'rest_framework',
     'rest_framework_simplejwt',
+    'rest_framework_simplejwt.token_blacklist',
+    'drf_spectacular',
     'gestion_banda',
 ]
 
-# CORRECCIÓN 1: CorsMiddleware debe ser el PRIMERO en la lista
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -84,17 +87,31 @@ WSGI_APPLICATION = 'core.wsgi.application'
 
 
 # Database
+# Usar DATABASE_URL si está disponible, sino PostgreSQL con vars individuales, sino SQLite
+DATABASE_URL = env('DATABASE_URL', default='')
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': env('DB_NAME', default='sis_banda_prod'),
-        'USER': env('DB_USER', default='admin_banda'),
-        'PASSWORD': env('DB_PASSWORD', default='meji_no_pierde_123'),
-        'HOST': env('DB_HOST', default='db'),
-        'PORT': env('DB_PORT', default='5432'),
+if DATABASE_URL:
+    DATABASES = {
+        'default': env.db()
     }
-}
+elif env('DB_HOST', default=''):
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': env('DB_NAME', default='sis_banda'),
+            'USER': env('DB_USER', default='postgres'),
+            'PASSWORD': env('DB_PASSWORD'),
+            'HOST': env('DB_HOST'),
+            'PORT': env('DB_PORT', default='5432'),
+        }
+    }
+else:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+        }
+    }
 
 
 # Password validation
@@ -132,6 +149,11 @@ STATICFILES_DIRS = [
     BASE_DIR / 'static',
 ]
 STATIC_ROOT = BASE_DIR / 'staticfiles'
+STORAGES = {
+    'staticfiles': {
+        'BACKEND': 'whitenoise.storage.CompressedManifestStaticFilesStorage',
+    },
+}
 
 # Media files
 MEDIA_URL = 'media/'
@@ -165,35 +187,47 @@ if not DEBUG:
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # ==========================================
-# CORRECCIÓN 2: Configuración de CORS unificada
+# Configuración de CORS
 # ==========================================
 CORS_ALLOW_ALL_ORIGINS = False
 CORS_ALLOW_CREDENTIALS = True
 
-# Unificamos todos los puertos que podrías usar en Vite o React
-DEFAULT_CORS = 'http://localhost:5173,http://127.0.0.1:5173,http://localhost:5174,http://127.0.0.1:5174,http://localhost:3000'
-CORS_ALLOWED_ORIGINS = env('CORS_ALLOWED_ORIGINS', default=DEFAULT_CORS, cast=lambda v: [s.strip() for s in v.split(',')])
+# CORS configurable por variable de entorno
+_cors_origins = env('CORS_ALLOWED_ORIGINS', default='http://localhost:5173,http://127.0.0.1:5173,http://localhost:5174,http://127.0.0.1:5174,http://localhost:3000')
+CORS_ALLOWED_ORIGINS = [o.strip() for o in _cors_origins.split(',')]
 
-CSRF_TRUSTED_ORIGINS = env('CORS_ALLOWED_ORIGINS', default=DEFAULT_CORS, cast=lambda v: [s.strip() for s in v.split(',')])
+CSRF_TRUSTED_ORIGINS = CORS_ALLOWED_ORIGINS
 
 
-# Configuración estricta de Django REST Framework (JWT y Throttling)
+# Django REST Framework con Throttling activado
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     ),
+    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
     'DEFAULT_THROTTLE_CLASSES': [
         'rest_framework.throttling.AnonRateThrottle',
-        'rest_framework.throttling.UserRateThrottle'
+        'rest_framework.throttling.UserRateThrottle',
     ],
     'DEFAULT_THROTTLE_RATES': {
-        'anon': '60/minute',  # Máximo 60 intentos por minuto
-        'user': '100/minute'
+        'anon': '30/minute',
+        'user': '120/minute',
+        'login': '5/minute',
     }
 }
 
-# Configuración de JWT para duración del token
+SPECTACULAR_SETTINGS = {
+    'TITLE': 'SisBanda API',
+    'DESCRIPTION': 'Documentación de la API del Sistema de Gestión de Banda Musical',
+    'VERSION': '1.0.0',
+    'SERVE_INCLUDE_SCHEMA': False,
+}
+
+# Configuración de JWT segura
 SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(seconds=env('ACCESS_TOKEN_LIFETIME')),
     'REFRESH_TOKEN_LIFETIME': timedelta(seconds=env('REFRESH_TOKEN_LIFETIME')),
+    'ROTATE_REFRESH_TOKENS': True,
+    'BLACKLIST_AFTER_ROTATION': True,
+    'UPDATE_LAST_LOGIN': True,
 }

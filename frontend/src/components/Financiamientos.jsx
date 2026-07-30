@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import api from '../services/api';
 import { Plus, Save, CheckCircle, Clock } from 'lucide-react';
+import Notification from './Notification';
 
 export default function Financiamientos({ musicos }) {
   const [deudas, setDeudas] = useState([]);
@@ -9,6 +10,8 @@ export default function Financiamientos({ musicos }) {
   const [filterApplied, setFilterApplied] = useState(false);
   const [filterSelection, setFilterSelection] = useState({ tipo: 'TODOS', seccion: 'TROMPETA', musico_id: '' });
   const [abonoMontos, setAbonoMontos] = useState({});
+  const [notification, setNotification] = useState({ show: false, type: 'success', message: '' });
+  const [deudaToDelete, setDeudaToDelete] = useState(null);
 
   const [nuevaDeuda, setNuevaDeuda] = useState({
      motivo: '',
@@ -96,7 +99,8 @@ export default function Financiamientos({ musicos }) {
 
   const handleCrearDeuda = async () => {
      if (!nuevaDeuda.motivo || !nuevaDeuda.monto_total) {
-         return alert('Completa el motivo y el monto total');
+         setNotification({ show: true, type: 'error', message: 'Completa el motivo y el monto total' });
+         return;
      }
 
      let musicos_ids = [];
@@ -104,9 +108,15 @@ export default function Financiamientos({ musicos }) {
          musicos_ids = musicos.map(m => m.id);
      } else if (nuevaDeuda.aplicarA === 'SECCION') {
          musicos_ids = musicos.filter(m => m.instrumento === nuevaDeuda.seccion).map(m => m.id);
-         if (musicos_ids.length === 0) return alert('No hay músicos en esta sección');
+         if (musicos_ids.length === 0) {
+             setNotification({ show: true, type: 'error', message: 'No hay músicos en esta sección' });
+             return;
+         }
      } else {
-         if (!nuevaDeuda.musico_id) return alert('Selecciona un músico');
+         if (!nuevaDeuda.musico_id) {
+             setNotification({ show: true, type: 'error', message: 'Selecciona un músico' });
+             return;
+         }
          musicos_ids = [nuevaDeuda.musico_id];
      }
 
@@ -118,13 +128,13 @@ export default function Financiamientos({ musicos }) {
              musicos_ids: musicos_ids
          });
          
-         alert('Deuda(s) creada(s) con éxito');
+         setNotification({ show: true, type: 'success', message: '¡Deuda agregada exitosamente!' });
          setShowModal(false);
          setNuevaDeuda({ motivo: '', monto_total: '', aplicarA: 'TODOS', seccion: 'TROMPETA', musico_id: '' });
          refreshDeudas();
      } catch (error) {
          console.error(error);
-         alert('Error al crear deuda');
+         setNotification({ show: true, type: 'error', message: 'Error al crear deuda' });
      } finally {
          setLoading(false);
      }
@@ -138,9 +148,18 @@ export default function Financiamientos({ musicos }) {
       const monto = parseFloat(abonoMontos[deudaId]);
       const deuda = deudas.find(d => d.id === deudaId);
 
-      if (!deuda) return alert('Deuda no encontrada');
-      if (!monto || monto <= 0) return alert('Ingresa un monto de abono válido');
-      if (monto > Number(deuda.saldo_restante)) return alert('El monto no puede superar el saldo pendiente');
+      if (!deuda) {
+          setNotification({ show: true, type: 'error', message: 'DEUDA NO ENCONTRADA' });
+          return;
+      }
+      if (!monto || monto <= 0) {
+          setNotification({ show: true, type: 'error', message: 'INGRESA UN MONTO VALIDO' });
+          return;
+      }
+      if (monto > Number(deuda.saldo_restante)) {
+          setNotification({ show: true, type: 'error', message: 'EL MONTO NO PUEDE SUPERAR EL SALDO PENDIENTE' });
+          return;
+      }
 
       setLoading(true);
       try {
@@ -150,27 +169,33 @@ export default function Financiamientos({ musicos }) {
           });
 
           setAbonoMontos(prev => ({ ...prev, [deudaId]: '' }));
+          setNotification({ show: true, type: 'success', message: '¡ABONO REGISTRADO EXITOSAMENTE!' });
           refreshDeudas();
       } catch (error) {
           console.error(error);
-          alert('Error al registrar el abono');
+          setNotification({ show: true, type: 'error', message: 'Error al registrar el abono' });
       } finally {
           setLoading(false);
       }
   };
 
-  const handleEliminarDeuda = async (id) => {
-      if (!window.confirm('¿Eliminar esta deuda? Esta acción no se puede deshacer.')) {
-          return;
-      }
+  const handleEliminarDeuda = (id) => {
+      setDeudaToDelete(id);
+  };
+
+  const confirmDeleteDeuda = async () => {
+      if (!deudaToDelete) return;
 
       setLoading(true);
       try {
-          await api.delete(`/deudas/${id}/`);
+          await api.delete(`/deudas/${deudaToDelete}/`);
+          setNotification({ show: true, type: 'success', message: '¡DEUDA ELIMINADA CORRECTAMENTE!' });
+          setDeudaToDelete(null);
           refreshDeudas();
       } catch (error) {
           console.error(error);
-          alert('Error al eliminar la deuda');
+          setNotification({ show: true, type: 'error', message: 'ERROR AL ELIMINAR LA DEUDA!' });
+          setDeudaToDelete(null);
       } finally {
           setLoading(false);
       }
@@ -180,7 +205,7 @@ export default function Financiamientos({ musicos }) {
     <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 animate-in fade-in duration-300">
       <div className="flex justify-between items-center mb-6">
         <div>
-           <h3 className="text-xl font-bold text-gray-800">📌 Deudas y Abonos por Músico</h3>
+           <h3 className="text-xl font-bold text-gray-800">Deudas y Abonos por Músico</h3>
            <p className="text-sm text-gray-500">Administra la deuda total de cada músico y registra abonos parciales directamente en la tabla.</p>
         </div>
         <button 
@@ -338,7 +363,6 @@ export default function Financiamientos({ musicos }) {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
           <div className="bg-white rounded-2xl w-full max-w-md shadow-xl animate-in fade-in zoom-in-95 p-6">
             <h3 className="text-xl font-bold text-gray-800 mb-1">Registrar Nueva Deuda</h3>
-            <p className="text-xs text-gray-500 mb-4">Crea una deuda. Luego registra los abonos/pagos que el músico vaya realizando.</p>
             
             <div className="space-y-4">
                <div>
@@ -348,7 +372,7 @@ export default function Financiamientos({ musicos }) {
                      value={nuevaDeuda.motivo} 
                      onChange={e => setNuevaDeuda({...nuevaDeuda, motivo: e.target.value})}
                      className="w-full px-3 py-2 border border-gray-300 rounded-lg outline-none focus:ring-2 focus:ring-purple-500 uppercase"
-                     placeholder="Ej: COMPRA DE BAR�TONO YAMAHA"
+                     placeholder="Ej: COMPRA DE BARITONO"
                   />
                </div>
                <div>
@@ -364,9 +388,9 @@ export default function Financiamientos({ musicos }) {
                </div>
 
                <div>
-                  <label className="block text-sm font-bold text-gray-700 mb-2">�A qui�n se aplica esta deuda?</label>
+                  <label className="block text-sm font-bold text-gray-700 mb-2">A quien se aplicara esta deuda...?</label>
                   <div className="flex gap-2 mb-3 bg-gray-100 p-1 rounded-lg">
-                     <button onClick={() => setNuevaDeuda({...nuevaDeuda, aplicarA: 'SECCION'})} className={`flex-1 py-1.5 text-xs font-bold rounded-md ${nuevaDeuda.aplicarA === 'SECCION' ? 'bg-white shadow text-purple-700' : 'text-gray-500'}`}>Por Secci�n</button>
+                     <button onClick={() => setNuevaDeuda({...nuevaDeuda, aplicarA: 'SECCION'})} className={`flex-1 py-1.5 text-xs font-bold rounded-md ${nuevaDeuda.aplicarA === 'SECCION' ? 'bg-white shadow text-purple-700' : 'text-gray-500'}`}>Por Seccion</button>
                      <button onClick={() => setNuevaDeuda({...nuevaDeuda, aplicarA: 'INDIVIDUAL'})} className={`flex-1 py-1.5 text-xs font-bold rounded-md ${nuevaDeuda.aplicarA === 'INDIVIDUAL' ? 'bg-white shadow text-purple-700' : 'text-gray-500'}`}>Individual</button>
                      <button onClick={() => setNuevaDeuda({...nuevaDeuda, aplicarA: 'TODOS'})} className={`flex-1 py-1.5 text-xs font-bold rounded-md ${nuevaDeuda.aplicarA === 'TODOS' ? 'bg-white shadow text-purple-700' : 'text-gray-500'}`}>A Todos</button>
                   </div>
@@ -403,6 +427,40 @@ export default function Financiamientos({ musicos }) {
             </div>
           </div>
         </div>
+      )}
+
+      {/* Modal de Confirmación de Eliminación */}
+      {deudaToDelete && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 animate-in fade-in duration-200">
+          <div className="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden p-6 text-center">
+            <h3 className="text-xl font-bold text-gray-800 mb-2">¿Eliminar Deuda?</h3>
+            <p className="text-gray-600 mb-6">Esta acción no se puede deshacer. ¿Estás seguro de que deseas eliminar esta deuda?</p>
+            <div className="flex gap-3 justify-center">
+              <button
+                onClick={() => setDeudaToDelete(null)}
+                className="px-5 py-2.5 rounded-xl font-medium text-gray-600 hover:bg-gray-100 transition-colors"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={confirmDeleteDeuda}
+                disabled={loading}
+                className="px-5 py-2.5 rounded-xl font-medium text-white bg-red-600 hover:bg-red-700 transition-colors shadow-sm disabled:opacity-50"
+              >
+                {loading ? 'Eliminando...' : 'Sí, Eliminar'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Notificación */}
+      {notification.show && (
+        <Notification
+          type={notification.type}
+          message={notification.message}
+          onClose={() => setNotification({ ...notification, show: false })}
+        />
       )}
     </div>
   );
