@@ -2,7 +2,6 @@ services:
   - type: web
     name: sis-banda-api
     runtime: python
-    runtimeVersion: "3.11"
     plan: free
     buildCommand: >
       pip install -r requirements.txt &&
@@ -42,4 +41,3 @@ services:
 databases:
   - name: sis-banda-db
     plan: free
-    postgresDatabaseVersion: "15"
