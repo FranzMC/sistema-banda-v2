@@ -7,8 +7,8 @@ services:
       pip install -r requirements.txt &&
       python manage.py migrate --noinput &&
       python manage.py collectstatic --noinput &&
-      python seed_modulos.py &&
-      python -c "import os; import django; os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'core.settings'); django.setup(); from django.contrib.auth import get_user_model; User = get_user_model(); User.objects.filter(username='admin').exists() or User.objects.create_superuser('admin', 'admin@admin.com', 'Banda12345')"
+      (python seed_modulos.py || true) &&
+      (python create_admin.py || true)
     startCommand: gunicorn core.wsgi:application --workers 2 --timeout 120 --bind 0.0.0.0:$PORT
     healthCheckPath: /api/
     autoDeploy: true
