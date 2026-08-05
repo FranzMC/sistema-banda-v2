@@ -77,7 +77,8 @@ class PlanillaLiquidacionDetalleSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
     def get_total_pagos(self, obj):
-        return obj.pagos.aggregate(total=Sum('monto_final'))['total'] or Decimal('0.00')
+        from django.db.models import Sum
+        return obj.pagos.aggregate(total=Sum('neto_pagar'))['total'] or Decimal('0.00')
 
 
 class DetalleMontoDiarioSerializer(serializers.ModelSerializer):

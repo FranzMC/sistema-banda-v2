@@ -60,9 +60,8 @@ class EventoViewSet(viewsets.ModelViewSet):
         musico_id = request.data.get('musico_id')
         if not musico_id:
             return Response({'error': 'Se requiere musico_id'}, status=status.HTTP_400_BAD_REQUEST)
-        if musico_id in evento.convocados:
+        if evento.convocados.filter(id=musico_id).exists():
             evento.convocados.remove(musico_id)
-            evento.save()
             return Response({'ok': True, 'mensaje': f'Músico {musico_id} desconvocado del evento {evento.titulo}'})
         return Response({'error': 'El músico no estaba convocado en este evento'}, status=status.HTTP_400_BAD_REQUEST)
 

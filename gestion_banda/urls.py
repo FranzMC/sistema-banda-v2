@@ -1,4 +1,6 @@
 from django.urls import path, include
+from rest_framework import views as drf_views, permissions as drf_permissions
+from rest_framework.response import Response
 from rest_framework.routers import DefaultRouter
 from .views.musicos_views import MusicoViewSet, JefeSeccionViewSet, ContratoMusicoViewSet
 from .views.usuarios_views import UsuarioViewSet
@@ -9,9 +11,19 @@ from .views.finanzas_views import (
 )
 from .views.config_views import ConfiguracionViewSet
 from .views.canastones_views import CampanaCanastonViewSet, ResultadoCanastonViewSet, CanastonEstadisticasView
-from .views.auth_views import PinAuthView, UserMeView
+from .views.auth_views import PinAuthView, UserMeView, MobileSessionView
 from .views.dashboard_views import DashboardView, RankingView
 from .views.musico_resumen_views import MusicoResumenView
+from .models import Musico
+
+
+class SeccionesView(drf_views.APIView):
+    """Devuelve la lista de secciones/instrumentos para la app móvil."""
+    permission_classes = [drf_permissions.IsAuthenticated]
+
+    def get(self, request):
+        secciones = [{'value': k, 'label': v} for k, v in Musico.INSTRUMENTOS]
+        return Response(secciones)
 
 router = DefaultRouter()
 router.register(r'musicos', MusicoViewSet, basename='musicos')
@@ -33,10 +45,11 @@ router.register(r'resultados-canaston', ResultadoCanastonViewSet, basename='resu
 urlpatterns = [
     path('auth/me/', UserMeView.as_view(), name='auth_me'),
     path('auth/pin/', PinAuthView.as_view(), name='auth_pin'),
+    path('auth/session/', MobileSessionView.as_view(), name='auth_session'),
+    path('secciones/', SeccionesView.as_view(), name='secciones'),
     path('dashboard/', DashboardView.as_view(), name='dashboard'),
     path('ranking/', RankingView.as_view(), name='ranking'),
     path('canaston/estadisticas/', CanastonEstadisticasView.as_view(), name='canaston_estadisticas'),
     path('musico/resumen/', MusicoResumenView.as_view(), name='musico_resumen'),
     path('', include(router.urls)),
 ]
-

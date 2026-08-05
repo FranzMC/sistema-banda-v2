@@ -2,14 +2,18 @@ services:
   - type: web
     name: sis-banda-api
     runtime: python
-    runtimeVersion: 3.11
+    runtimeVersion: "3.11"
     plan: free
     buildCommand: >
       pip install -r requirements.txt &&
-      python manage.py migrate &&
+      python manage.py migrate --noinput &&
       python manage.py collectstatic --noinput
-    startCommand: gunicorn core.wsgi:application
+    startCommand: gunicorn core.wsgi:application --workers 2 --timeout 120 --bind 0.0.0.0:$PORT
+    healthCheckPath: /api/
+    autoDeploy: true
     envVars:
+      - key: DJANGO_SETTINGS_MODULE
+        value: core.settings
       - key: DEBUG
         value: "False"
       - key: SECRET_KEY
@@ -32,8 +36,8 @@ services:
         value: "True"
       - key: CSRF_COOKIE_SECURE
         value: "True"
-    healthCheckPath: /api/
-    autoDeploy: true
+      - key: PYTHON_VERSION
+        value: "3.11.9"
 
 databases:
   - name: sis-banda-db

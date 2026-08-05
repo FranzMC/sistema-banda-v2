@@ -122,7 +122,7 @@ class MusicoViewSet(viewsets.ModelViewSet):
             
             if instrumento not in instrumentos_permitidos:
                 from rest_framework.exceptions import PermissionDenied
-                raise PermissionDenied(f'Solo puede crear músicos de sus secciones: {", ".join(secciones)}')
+                raise PermissionDenied(f'Solo puede crear músicos de sus secciones: {", ".join(instrumentos_permitidos)}')
         
         validated_data = serializer.validated_data
         nombres = validated_data.get('nombres', '')
@@ -154,13 +154,13 @@ class MusicoViewSet(viewsets.ModelViewSet):
             
             if musico.instrumento not in instrumentos_permitidos:
                 from rest_framework.exceptions import PermissionDenied
-                raise PermissionDenied(f'Solo puede editar músicos de sus secciones: {", ".join(secciones)}')
+                raise PermissionDenied(f'Solo puede editar músicos de sus secciones: {", ".join(instrumentos_permitidos)}')
             
             # Validar que no cambie el instrumento a otra sección
             instrumento = serializer.validated_data.get('instrumento')
             if instrumento and instrumento not in instrumentos_permitidos:
                 from rest_framework.exceptions import PermissionDenied
-                raise PermissionDenied(f'No puede cambiar el instrumento a otra sección fuera de: {", ".join(secciones)}')
+                raise PermissionDenied(f'No puede cambiar el instrumento a otra sección fuera de: {", ".join(instrumentos_permitidos)}')
         
         serializer.save()
 
@@ -180,7 +180,7 @@ class MusicoViewSet(viewsets.ModelViewSet):
             
             if instance.instrumento not in instrumentos_permitidos:
                 from rest_framework.exceptions import PermissionDenied
-                raise PermissionDenied(f'Solo puede eliminar músicos de sus secciones: {", ".join(secciones)}')
+                raise PermissionDenied(f'Solo puede eliminar músicos de sus secciones: {", ".join(instrumentos_permitidos)}')
         
         instance.delete()
 
