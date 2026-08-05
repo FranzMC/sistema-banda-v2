@@ -12,14 +12,16 @@ def create_user_for_musico(nombres, apellidos, ci):
     Crea un usuario Django para un mÃºsico nuevo.
     Genera username automÃ¡ticamente y contraseÃ±a segura aleatoria.
     """
-    import uuid
+    # Generar username usando el CI
+    username = str(ci).strip()
+    
+    # Si el CI ya existe como usuario (raro, pero por si acaso), agregarle un sufijo
+    if Usuario.objects.filter(username=username).exists():
+        import uuid
+        username = f"{username}_{uuid.uuid4().hex[:4]}"
 
-    # Generar username Ãºnico
-    base = (nombres.split()[0] if nombres else 'user').lower()
-    username = f"{base}_{uuid.uuid4().hex[:6]}"
-
-    # Generar contraseÃ±a aleatoria segura
-    password = Usuario.objects.make_random_password(length=12)
+    # El PIN (contraseña) serán los primeros 4 dígitos del CI
+    password = str(ci).strip()[:4]
 
     # Crear usuario
     user = Usuario.objects.create(
