@@ -6,7 +6,8 @@ services:
     buildCommand: >
       pip install -r requirements.txt &&
       python manage.py migrate --noinput &&
-      python manage.py collectstatic --noinput
+      python manage.py collectstatic --noinput &&
+      python -c "import os; import django; os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'core.settings'); django.setup(); from django.contrib.auth.models import User; User.objects.filter(username='admin').exists() or User.objects.create_superuser('admin', 'admin@admin.com', 'Banda12345')"
     startCommand: gunicorn core.wsgi:application --workers 2 --timeout 120 --bind 0.0.0.0:$PORT
     healthCheckPath: /api/
     autoDeploy: true
