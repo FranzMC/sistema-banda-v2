@@ -2,8 +2,14 @@ services:
   - type: web
     name: sis-banda-frontend
     env: static
-    buildCommand: cd frontend && npm install && npm run build
-    staticPublishPath: frontend/dist
+    rootDir: frontend
+    buildCommand: npm install && npm run build
+    staticPublishPath: dist
+    autoDeploy: true
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
     autoDeploy: true
 
   - type: web
