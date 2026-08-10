@@ -281,23 +281,23 @@ export default function Musicos() {
       </header>
       
       {/* Barra de Búsqueda y Filtros */}
-      <div className="mb-6 grid grid-cols-1 md:grid-cols-3 gap-4 p-4 bg-white rounded-2xl border border-gray-100 shadow-sm">
-        <div className="relative col-span-1 md:col-span-1">
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+      <div className="mb-4 flex flex-col sm:flex-row gap-3">
+        <div className="relative flex-1">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
           <input
             type="text"
             placeholder="Buscar por nombre, apellido o CI..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value.toUpperCase())}
-            className="w-full pl-12 pr-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
+            className="w-full pl-9 pr-4 py-2.5 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all text-sm"
           />
         </div>
         <select
           value={instrumentoFilter}
           onChange={(e) => setInstrumentoFilter(e.target.value)}
-          className="w-full col-span-1 md:col-span-1 px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none bg-white"
+          className="w-full sm:w-48 px-4 py-2.5 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none bg-white text-sm"
         >
-          <option value="">Todas las Secciones (Instrumento)</option>
+          <option value="">Todas las Secciones</option>
           {uniqueInstruments.map(inst => (
             <option key={inst} value={inst}>{inst}</option>
           ))}
@@ -305,16 +305,66 @@ export default function Musicos() {
         {!['JEFE_SECCION', 'MUSICO'].includes(userRol) && (
           <button
             onClick={() => setIsReportModalOpen(true)}
-            className="col-span-1 md:col-span-1 flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-3 rounded-xl font-medium transition-colors shadow-sm"
+            className="flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2.5 rounded-xl font-medium transition-colors shadow-sm text-sm whitespace-nowrap"
           >
-            <FileDown className="w-5 h-5" />
-            Generar Reporte
+            <FileDown className="w-4 h-4" />
+            Reporte
           </button>
         )}
       </div>
 
-      {/* Formato de Lista / Tabla (Estilo Excel) */}
-      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+      {/* ── VISTA MÓVIL: cards ───────────────────────────────────────── */}
+      <div className="md:hidden space-y-3 mb-4">
+        {filteredMusicos.length === 0 ? (
+          <div className="bg-white rounded-2xl p-8 text-center text-gray-400 border border-gray-100">
+            <Users className="w-10 h-10 mx-auto mb-2 opacity-30" />
+            <p className="text-sm">No se encontraron músicos</p>
+          </div>
+        ) : filteredMusicos.map((musico, index) => (
+          <div key={musico.id} className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4">
+            <div className="flex items-start gap-3">
+              {/* Avatar */}
+              <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0 font-bold text-blue-700 text-sm">
+                {index + 1}
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="font-semibold text-gray-800 text-sm leading-tight truncate">
+                  {musico.nombres} {musico.apellidos}
+                </p>
+                <p className="text-xs text-gray-400 mt-0.5">CI: {musico.documento_identidad || '—'}</p>
+                <div className="flex flex-wrap items-center gap-2 mt-2">
+                  <span className="inline-flex items-center text-xs bg-blue-50 text-blue-700 px-2 py-0.5 rounded-full font-medium">
+                    {musico.instrumento}
+                  </span>
+                  {musico.telefono && (
+                    <span className="text-xs text-gray-500">{musico.telefono}</span>
+                  )}
+                  <span className={`inline-flex items-center text-xs px-2 py-0.5 rounded-full font-medium ${
+                    musico.activo ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-600'
+                  }`}>
+                    {musico.activo ? '● Activo' : '● Inactivo'}
+                  </span>
+                </div>
+              </div>
+              {/* Acciones */}
+              <div className="flex items-center gap-2 flex-shrink-0">
+                <button onClick={() => setViewingMusico(musico)} className="p-2 rounded-lg hover:bg-blue-50 text-blue-500 transition-colors">
+                  <Eye className="w-4 h-4" />
+                </button>
+                <button onClick={() => handleEdit(musico)} className="p-2 rounded-lg hover:bg-amber-50 text-amber-500 transition-colors">
+                  <Edit2 className="w-4 h-4" />
+                </button>
+                <button onClick={() => setMusicoToDelete(musico)} className="p-2 rounded-lg hover:bg-red-50 text-red-500 transition-colors">
+                  <Trash2 className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* ── VISTA DESKTOP: tabla ─────────────────────────────────────── */}
+      <div className="hidden md:block bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
         <div className="overflow-x-auto">
           <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
             <table className="w-full text-left border-collapse">
