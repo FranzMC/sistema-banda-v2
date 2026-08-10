@@ -9,5 +9,20 @@
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
+    <script>
+      // Force unregister any lingering service workers from the broken PWA commit
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.getRegistrations().then(function(registrations) {
+          for(let registration of registrations) {
+            registration.unregister().then(function(boolean) {
+              if (boolean) {
+                console.log('Service worker unregistered.');
+                window.location.reload(true); // Force reload from server
+              }
+            });
+          }
+        });
+      }
+    </script>
   </body>
 </html>
