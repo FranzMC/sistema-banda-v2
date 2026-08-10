@@ -3,6 +3,8 @@ import api from '../services/api';
 import { Search, Filter, TrendingDown, Calendar, Users, AlertTriangle, Edit2, Trash2, X, Upload, Check, FileText } from 'lucide-react';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
+import { saveToOfflineQueue } from '../services/offlineSync';
+import toast from 'react-hot-toast';
 
 export default function AdelantosSeccion() {
   const [adelantos, setAdelantos] = useState([]);
@@ -49,6 +51,46 @@ export default function AdelantosSeccion() {
       setError(err.response?.data?.error || 'Error al procesar archivo');
     } finally {
       setIsPdfAdelantosProcessing(false);
+    }
+  };
+
+  const handleGuardarAdelanto = async () => {
+    if (!editData.monto || !editData.motivo) {
+      alert("Por favor complete todos los campos");
+      return;
+    }
+
+    const payload = {
+      monto: editData.monto,
+      motivo: editData.motivo
+    };
+
+    if (!navigator.onLine) {
+      // Offline mode
+      saveToOfflineQueue(
+        editingId ? `/adelantos/${editingId}/` : '/adelantos/',
+        editingId ? 'PUT' : 'POST',
+        payload,
+        'adelanto'
+      );
+      toast.success("Necesitas conexión a internet para enviarlo al sistema, pero los datos se guardaron correctamente en la app.", { duration: 5000 });
+      setEditingId(null);
+      setEditData({ monto: '', motivo: '' });
+      return;
+    }
+
+    try {
+      if (editingId) {
+        await api.put(`/adelantos/${editingId}/`, payload);
+      } else {
+        await api.post('/adelantos/', payload);
+      }
+      cargarDatos();
+      setEditingId(null);
+      setEditData({ monto: '', motivo: '' });
+      toast.success(editingId ? "Adelanto actualizado en el sistema" : "Adelanto enviado al sistema");
+    } catch (error) {
+      alert("Error al guardar: " + (error.response?.data?.detail || "Intente nuevamente"));
     }
   };
 

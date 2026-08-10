@@ -77,7 +77,14 @@ export default function Usuarios() {
     }
   };
 
-  const filteredMusicos = musicos;
+  const filteredMusicos = musicos.filter(m => {
+    const term = searchTerm.toLowerCase();
+    return (
+      (m.nombres && m.nombres.toLowerCase().includes(term)) ||
+      (m.apellidos && m.apellidos.toLowerCase().includes(term)) ||
+      (m.documento_identidad && m.documento_identidad.toLowerCase().includes(term))
+    );
+  });
 
   const handleSelectMusico = async (musico) => {
     setSelectedMusico(musico);

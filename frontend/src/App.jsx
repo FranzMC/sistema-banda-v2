@@ -16,7 +16,9 @@ import Canaston from './pages/Canaston.jsx';
 import TomaAsistenciaMovil from './pages/TomaAsistenciaMovil.jsx';
 import MiResumen from './pages/MiResumen.jsx';
 import Configuracion from './pages/Configuracion.jsx';
-import { LogOut, Menu, User as UserIcon } from 'lucide-react';
+import api from './services/api';
+import { hasPendingSync, processOfflineQueue } from './services/offlineSync';
+import { LogOut, Menu, User as UserIcon, WifiOff } from 'lucide-react';
 
 function ProtectedRoutes() {
   const { user, loading, logout } = useAuth();
@@ -80,13 +82,13 @@ function ProtectedRoutes() {
 
             <div className="hidden sm:block h-6 w-px bg-gray-200" />
 
-            <button
-              onClick={logout}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-red-600 font-medium hover:bg-red-50 transition-all border border-transparent hover:border-red-100 text-sm"
+            <button 
+              onClick={logout} 
+              className="flex items-center gap-2 px-4 py-2 rounded-lg text-red-600 font-medium hover:bg-red-50 hover:text-red-700 transition-all border border-transparent hover:border-red-100"
               title="Cerrar Sesión"
             >
               <LogOut className="w-4 h-4" />
-              <span className="hidden sm:inline">Salir</span>
+              <span className="text-sm">Salir</span>
             </button>
           </div>
         </header>
@@ -117,18 +119,73 @@ function ProtectedRoutes() {
 }
 
 function App() {
+  const [isOnline, setIsOnline] = useState(navigator.onLine);
+  const [syncing, setSyncing] = useState(false);
+
+  useEffect(() => {
+    const handleOnline = () => {
+      setIsOnline(true);
+      if (hasPendingSync()) {
+        toast((t) => (
+          <div className="flex flex-col gap-2">
+            <span className="font-bold">¡Conexión restaurada!</span>
+            <span>Tienes datos pendientes (adelantos/descuentos) guardados sin conexión.</span>
+            <button 
+              onClick={async () => {
+                toast.dismiss(t.id);
+                setSyncing(true);
+                toast.loading('Enviando datos al sistema...', { id: 'sync' });
+                const result = await processOfflineQueue(api);
+                if (result.success > 0) {
+                  toast.success(`Se enviaron ${result.success} registros correctamente`, { id: 'sync' });
+                  // Recargar para refrescar vistas
+                  setTimeout(() => window.location.reload(), 1500);
+                } else if (result.failed > 0) {
+                  toast.error(`Falló el envío de ${result.failed} registros`, { id: 'sync' });
+                } else {
+                  toast.dismiss('sync');
+                }
+                setSyncing(false);
+              }}
+              className="bg-blue-600 text-white px-3 py-1.5 rounded-lg text-sm mt-1"
+            >
+              Enviar ahora
+            </button>
+          </div>
+        ), { duration: Infinity, icon: '📶' });
+      }
+    };
+    const handleOffline = () => {
+      setIsOnline(false);
+      toast.error('Sin conexión. Estás trabajando en modo local.', { icon: '🚫' });
+    };
+
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+
+    // Initial check just in case they load the app and already have pending sync
+    if (navigator.onLine && hasPendingSync()) {
+      handleOnline();
+    }
+
+    return () => {
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+    };
+  }, []);
+
   return (
     <AuthProvider>
       <Router>
-        <Toaster
-          position="top-center"
-          toastOptions={{
-            style: { maxWidth: '90vw', fontSize: '14px' },
-          }}
-        />
+        <Toaster position="top-right" />
+        {!isOnline && (
+          <div className="bg-red-500 text-white text-xs font-bold text-center py-1 flex items-center justify-center gap-2">
+            <WifiOff className="w-3 h-3" /> Sin conexión a internet
+          </div>
+        )}
         <Routes>
           <Route path="/login" element={<Login />} />
-          <Route path="/*"    element={<ProtectedRoutes />} />
+          <Route path="/*" element={<ProtectedRoutes />} />
         </Routes>
       </Router>
     </AuthProvider>

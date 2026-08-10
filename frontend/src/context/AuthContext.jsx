@@ -22,7 +22,17 @@ export const AuthProvider = ({ children }) => {
           localStorage.setItem('user', JSON.stringify(response.data));
         } catch (error) {
           console.error("Auth verification failed", error);
-          logout();
+          if (!navigator.onLine || error.code === 'ERR_NETWORK') {
+            console.log('Offline/Network error detected, using cached user data');
+            const cachedUser = localStorage.getItem('user');
+            if (cachedUser) {
+              setUser(JSON.parse(cachedUser));
+            } else {
+              logout();
+            }
+          } else {
+            logout();
+          }
         }
       }
       setLoading(false);
