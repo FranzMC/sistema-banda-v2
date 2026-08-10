@@ -52,8 +52,9 @@ export default function Login() {
         !navigator.onLine || 
         err.code === 'ERR_NETWORK' || 
         err.message === 'Network Error' ||
+        err.message === 'Failed to fetch' ||
         !err.response ||
-        (err.response && (err.response.status === 504 || err.response.status === 503));
+        (err.response && (err.response.status === 504 || err.response.status === 503 || err.response.status === 0));
 
       // Fallback para Modo Offline si hay error de red o no hay internet
       if (isOfflineError) {
