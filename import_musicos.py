@@ -156,6 +156,7 @@ def limpiar_ci(ci_raw):
 def importar():
     creados = 0
     omitidos = 0
+    sin_ci = 0
     errores = []
 
     with transaction.atomic():
@@ -168,28 +169,32 @@ def importar():
             ci = limpiar_ci(ci_raw) if ci_raw else ""
             nombre_completo = f"{nombres} {apellidos}".strip()
 
+            # Saltar musicos sin CI
+            if not ci:
+                print(f"  [SIN CI]  {nombre_completo:42s} {instrumento:10s} - omitido")
+                sin_ci += 1
+                continue
+
             if Musico.objects.filter(nombres=nombres, apellidos=apellidos,
                                      instrumento=instrumento).exists():
-                print(f"  [OMITIDO] {nombre_completo} ({instrumento})")
+                print(f"  [YA EXISTE] {nombre_completo} ({instrumento})")
                 omitidos += 1
                 continue
 
             try:
-                usuario = None
-                if ci:
-                    pin = ci[:4]
-                    username = ci
-                    if Usuario.objects.filter(username=username).exists():
-                        username = f"{ci}_{i}"
-                    usuario = Usuario.objects.create(
-                        username=username,
-                        first_name=nombres,
-                        last_name=apellidos,
-                        rol='MUSICO',
-                        is_active=True
-                    )
-                    usuario.set_password(pin)
-                    usuario.save()
+                pin = ci[:4]
+                username = ci
+                if Usuario.objects.filter(username=username).exists():
+                    username = f"{ci}_{i}"
+                usuario = Usuario.objects.create(
+                    username=username,
+                    first_name=nombres,
+                    last_name=apellidos,
+                    rol='MUSICO',
+                    is_active=True
+                )
+                usuario.set_password(pin)
+                usuario.save()
 
                 fecha_obj = None
                 if fecha_nac:
@@ -201,7 +206,7 @@ def importar():
 
                 Musico.objects.create(
                     usuario=usuario,
-                    documento_identidad=ci if ci else None,
+                    documento_identidad=ci,
                     nombres=nombres,
                     apellidos=apellidos,
                     telefono=telefono,
@@ -214,8 +219,7 @@ def importar():
                     orden=i + 1,
                 )
 
-                pin_info = f"PIN={ci[:4]}" if ci else "sin PIN"
-                print(f"  [OK] {nombre_completo:42s} {instrumento:10s} {pin_info}")
+                print(f"  [OK] {nombre_completo:42s} {instrumento:10s} PIN={ci[:4]}")
                 creados += 1
 
             except Exception as e:
@@ -224,11 +228,12 @@ def importar():
                 errores.append(msg)
 
     print(f"\n{'='*55}")
-    print(f"  Creados:  {creados}  |  Omitidos: {omitidos}  |  Errores: {len(errores)}")
+    print(f"  Creados: {creados}  |  Sin CI (omitidos): {sin_ci}  |  Ya existian: {omitidos}  |  Errores: {len(errores)}")
     if errores:
         print("\n  Errores:")
         for e in errores:
             print(e)
+
 
 
 if __name__ == "__main__":
