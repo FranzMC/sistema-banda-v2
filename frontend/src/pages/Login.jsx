@@ -35,41 +35,11 @@ export default function Login() {
       const userData = response.data.user || {};
       login(userData, response.data.access, response.data.refresh);
       
-      // Guardar credenciales para modo offline de forma segura (hasheada en base64)
-      const offlineAuth = {
-        ci: ci,
-        hash: btoa(password),
-        user: userData
-      };
-      localStorage.setItem('offline_credentials', JSON.stringify(offlineAuth));
-      
       toast.success('Inicio de sesión exitoso');
       navigate('/dashboard');
     } catch (err) {
       console.error('Error de login:', err);
-      
-      const isOfflineError = 
-        !navigator.onLine || 
-        err.code === 'ERR_NETWORK' || 
-        err.message === 'Network Error' ||
-        err.message === 'Failed to fetch' ||
-        !err.response ||
-        (err.response && (err.response.status === 504 || err.response.status === 503 || err.response.status === 0));
-
-      // Fallback para Modo Offline si hay error de red o no hay internet
-      if (isOfflineError) {
-        const cachedStr = localStorage.getItem('offline_credentials');
-        if (cachedStr) {
-          const cached = JSON.parse(cachedStr);
-          if (cached.ci === ci && cached.hash === btoa(password)) {
-            login(cached.user, 'offline_access_token', 'offline_refresh_token');
-            toast.success('Sesión iniciada sin conexión (Modo Offline)');
-            navigate('/dashboard');
-            return;
-          }
-        }
-        setError('Sin conexión: Credenciales incorrectas o no hay datos guardados en este dispositivo.');
-      } else if (err.response && err.response.data && err.response.data.error) {
+      if (err.response && err.response.data && err.response.data.error) {
         setError(err.response.data.error);
       } else {
         setError('Credenciales inválidas o cuenta inactiva.');
