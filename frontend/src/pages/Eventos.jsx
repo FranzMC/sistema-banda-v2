@@ -224,9 +224,9 @@ export default function Eventos() {
 
   return (
     <div className="animate-in fade-in duration-500">
-      <header className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
+      <header className="flex flex-col md:flex-row flex-wrap justify-between gap-3 items-start md:items-center mb-8 gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-3">
+          <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-3">
             <div className="bg-blue-100 p-2 rounded-xl text-blue-600">
               <CalendarDays className="w-8 h-8" />
             </div>
@@ -259,7 +259,7 @@ export default function Eventos() {
 
       {/* Estado Vacío */}
       {eventosFiltrados.length === 0 && (
-        <div className="bg-white rounded-3xl shadow-sm border border-gray-100 p-16 text-center">
+        <div className="bg-white rounded-3xl shadow-sm border border-gray-100 p-8 text-center">
           <div className="w-24 h-24 bg-blue-50 text-blue-300 rounded-full flex items-center justify-center mx-auto mb-6">
             <Calendar className="w-12 h-12" />
           </div>
@@ -279,7 +279,7 @@ export default function Eventos() {
       <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
         {eventosFiltrados.map(evento => (
           <div key={evento.id} className="bg-white rounded-3xl shadow-[0_2px_20px_-10px_rgba(0,0,0,0.1)] border border-gray-100 overflow-hidden flex flex-col hover:shadow-[0_8px_30px_-10px_rgba(0,0,0,0.1)] hover:-translate-y-1 transition-all duration-300">
-            <div className="p-8 flex-1">
+            <div className="p-6 flex-1">
               <h3 className="text-2xl font-black text-gray-900 mb-4 line-clamp-2 leading-tight">{evento.titulo}</h3>
               <div className="space-y-4">
                 <div className="flex items-start gap-4">
@@ -350,7 +350,7 @@ export default function Eventos() {
           {/* Fondo oscuro desenfocado */}
           <div className="absolute inset-0 bg-gray-900/40 backdrop-blur-sm transition-opacity" onClick={() => setIsModalOpen(false)}></div>
           
-          <div className="bg-white rounded-3xl shadow-2xl w-full max-w-[95vw] lg:max-w-6xl max-h-[90vh] overflow-hidden flex flex-col relative z-10 animate-in zoom-in-95 duration-200">
+          <div className="bg-white rounded-3xl shadow-2xl w-full max-w-[95vw] lg:max-w-4xl max-h-[90vh] overflow-hidden flex flex-col relative z-10 animate-in zoom-in-95 duration-200">
             
             {/* Header del Modal */}
             <div className="px-8 py-6 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
@@ -463,7 +463,7 @@ export default function Eventos() {
               // --- WIZARD PARA CREAR/EDITAR ---
               <>
                 {/* Navegación por Pasos (Wizard) */}
-                <div className="flex px-8 py-4 bg-white border-b border-gray-100">
+                <div className="flex flex-wrap px-6 py-4 bg-white border-b border-gray-100">
                   <button 
                     onClick={() => setModalStep(1)} 
                     className={`flex items-center gap-3 mr-8 transition-colors ${modalStep === 1 ? 'text-blue-600' : 'text-gray-400 hover:text-gray-600'}`}

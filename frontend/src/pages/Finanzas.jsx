@@ -25,9 +25,9 @@ export default function Finanzas() {
 
   return (
     <div className="animate-in fade-in duration-500">
-      <header className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
+      <header className="flex flex-col md:flex-row flex-wrap justify-between items-start md:items-center mb-6 gap-4">
         <div>
-          <h1 className="text-3xl font-black text-gray-800 flex items-center gap-3">
+          <h1 className="text-2xl font-black text-gray-800 flex items-center gap-3">
             <Wallet className="w-8 h-8 text-blue-600" />
             Liquidación Masiva
           </h1>
@@ -38,7 +38,7 @@ export default function Finanzas() {
           <select 
             value={selectedEvento} 
             onChange={(e) => setSelectedEvento(e.target.value)}
-            className="px-4 py-2 border-2 border-blue-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-500 min-w-[250px] font-bold text-gray-800 shadow-sm bg-white"
+            className="px-4 py-2 border-2 border-blue-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-500 w-full md:w-auto font-bold text-gray-800 shadow-sm bg-white"
           >
             <option value="">-- Seleccione un Contrato --</option>
             {eventos.map(e => <option key={e.id} value={e.id}>{e.titulo} ({new Date(e.fecha_hora_cita).toLocaleDateString()})</option>)}

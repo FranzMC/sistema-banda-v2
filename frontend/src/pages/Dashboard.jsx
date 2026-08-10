@@ -16,7 +16,7 @@ const COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899'
 
 function StatCard({ label, value, icon: Icon, color, trend }) {
   return (
-    <div className="bg-white rounded-3xl shadow-sm p-6 hover:shadow-lg transition-shadow border border-slate-100 relative overflow-hidden group">
+    <div className="bg-white rounded-3xl shadow-sm p-5 hover:shadow-lg transition-shadow border border-slate-100 relative overflow-hidden group">
       <div className={`absolute -right-6 -top-6 w-24 h-24 rounded-full opacity-10 group-hover:scale-150 transition-transform duration-500 ${color}`}></div>
       <div className="flex items-center justify-between mb-4 relative z-10">
         <div className={`${color} w-12 h-12 rounded-xl flex items-center justify-center text-white shadow-sm`}>
@@ -101,13 +101,13 @@ export default function Dashboard() {
   const isJefeSeccion = dashboardData?.rol === 'JEFE_SECCION';
 
   return (
-    <div className="min-h-screen bg-slate-50/50 p-4 md:p-8">
-      <div className="max-w-7xl mx-auto space-y-8">
+    <div className="min-h-screen bg-slate-50/50 p-3 md:p-5">
+      <div className="max-w-6xl mx-auto space-y-6">
         
         {/* ===================== HEADER GLOBAL ===================== */}
-        <div className="bg-white/70 backdrop-blur-md rounded-3xl p-8 shadow-sm border border-slate-100 flex flex-col md:flex-row items-start md:items-center justify-between">
+        <div className="bg-white/70 backdrop-blur-md rounded-3xl p-6 shadow-sm border border-slate-100 flex flex-col md:flex-row flex-wrap items-start md:items-center justify-between gap-4">
           <div>
-            <h1 className="text-3xl md:text-4xl font-extrabold text-slate-900 mb-2 tracking-tight">
+            <h1 className="text-2xl md:text-3xl font-extrabold text-slate-900 mb-2 tracking-tight">
               Hola, <span className="text-blue-600 bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-indigo-600">{user?.first_name || dashboardData?.usuario_nombre || 'Usuario'}</span>
             </h1>
             <p className="text-slate-500 font-medium">Banda de Música Espectacular Mejillones "Eco de los Andes"</p>
@@ -141,7 +141,7 @@ export default function Dashboard() {
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
               {/* Gráfico Financiero/Eventos */}
-              <div className="lg:col-span-2 bg-white p-8 rounded-3xl shadow-sm border border-slate-100">
+              <div className="lg:col-span-2 bg-white p-6 rounded-3xl shadow-sm border border-slate-100">
                 <h3 className="text-xl font-bold text-slate-800 mb-6">Proyección de Eventos (Año Actual)</h3>
                 <div className="h-72 w-full">
                   <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
@@ -163,7 +163,7 @@ export default function Dashboard() {
               </div>
 
               {/* Ranking de Indisciplina (Descuentos) Global */}
-              <div className="bg-white p-8 rounded-3xl shadow-sm border border-slate-100">
+              <div className="bg-white p-6 rounded-3xl shadow-sm border border-slate-100">
                 <div className="flex justify-between items-center mb-6">
                   <h3 className="text-xl font-bold text-slate-800">Ranking de Descuentos por Sección</h3>
                   <button onClick={() => navigate('/descuentos')} className="text-sm text-blue-600 font-bold hover:text-blue-700 transition-colors">Ver Detalles</button>
@@ -198,7 +198,7 @@ export default function Dashboard() {
             {/* Main Content */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
               {/* Agenda Inmediata */}
-              <div className="lg:col-span-2 bg-white p-8 rounded-3xl shadow-sm border border-slate-100">
+              <div className="lg:col-span-2 bg-white p-6 rounded-3xl shadow-sm border border-slate-100">
                 <div className="flex justify-between items-center mb-6">
                   <h3 className="text-xl font-bold text-slate-800">Próximas Presentaciones (Timeline)</h3>
                   <button onClick={() => navigate('/eventos')} className="text-sm bg-blue-50 text-blue-600 px-4 py-2 rounded-xl font-bold hover:bg-blue-100 transition-colors">Gestionar Agenda</button>
@@ -223,7 +223,7 @@ export default function Dashboard() {
 
               {/* Distribución y Accesos */}
               <div className="space-y-8">
-                <div className="bg-white p-8 rounded-3xl shadow-sm border border-slate-100">
+                <div className="bg-white p-6 rounded-3xl shadow-sm border border-slate-100">
                   <h3 className="text-xl font-bold text-slate-800 mb-6">Distribución por Sección</h3>
                   <div className="h-64">
                     <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
@@ -238,7 +238,7 @@ export default function Dashboard() {
                   </div>
                 </div>
 
-                <div className="bg-gradient-to-br from-rose-500 to-rose-700 p-8 rounded-3xl text-white shadow-lg relative overflow-hidden">
+                <div className="bg-gradient-to-br from-rose-500 to-rose-700 p-6 rounded-3xl text-white shadow-lg relative overflow-hidden">
                   <div className="absolute top-0 right-0 p-8 opacity-10"><AlertCircle className="w-32 h-32" /></div>
                   <div className="relative z-10">
                     <h2 className="text-2xl font-bold mb-2">Descuentos por Sección</h2>
@@ -277,7 +277,7 @@ export default function Dashboard() {
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
               {/* Movimientos Recientes */}
               <div className="lg:col-span-2 space-y-8">
-                <div className="bg-white p-8 rounded-3xl shadow-sm border border-slate-100">
+                <div className="bg-white p-6 rounded-3xl shadow-sm border border-slate-100">
                   <div className="flex justify-between items-center mb-6">
                     <h3 className="text-xl font-bold text-slate-800">Últimos Descuentos Registrados</h3>
                     <button onClick={() => navigate('/descuentos')} className="text-sm bg-rose-50 text-rose-600 px-4 py-2 rounded-xl font-bold hover:bg-rose-100 transition-colors">+ Registrar Descuento</button>
@@ -299,7 +299,7 @@ export default function Dashboard() {
                   </div>
                 </div>
 
-                <div className="bg-white p-8 rounded-3xl shadow-sm border border-slate-100">
+                <div className="bg-white p-6 rounded-3xl shadow-sm border border-slate-100">
                   <div className="flex justify-between items-center mb-6">
                     <h3 className="text-xl font-bold text-slate-800">Últimos Adelantos Gestionados</h3>
                     <button onClick={() => navigate('/adelantos')} className="text-sm bg-blue-50 text-blue-600 px-4 py-2 rounded-xl font-bold hover:bg-blue-100 transition-colors">+ Registrar Adelanto</button>
@@ -325,7 +325,7 @@ export default function Dashboard() {
               {/* Canastón Widget */}
               <div>
                 {dashboardData.canaston ? (
-                  <div className="bg-gradient-to-br from-violet-600 via-fuchsia-600 to-pink-500 p-8 rounded-3xl text-white shadow-xl shadow-fuchsia-200 relative overflow-hidden group">
+                  <div className="bg-gradient-to-br from-violet-600 via-fuchsia-600 to-pink-500 p-6 rounded-3xl text-white shadow-xl shadow-fuchsia-200 relative overflow-hidden group">
                     <div className="absolute top-0 right-0 p-8 opacity-20 group-hover:scale-125 group-hover:rotate-12 transition-transform duration-500">
                       <Trophy className="w-48 h-48" />
                     </div>
@@ -346,7 +346,7 @@ export default function Dashboard() {
                     </div>
                   </div>
                 ) : (
-                  <div className="bg-white p-8 rounded-3xl shadow-sm border border-slate-100 text-center">
+                  <div className="bg-white p-6 rounded-3xl shadow-sm border border-slate-100 text-center">
                     <Trophy className="w-16 h-16 text-slate-300 mx-auto mb-4" />
                     <h3 className="text-xl font-bold text-slate-800 mb-2">Canastón Inactivo</h3>
                     <p className="text-slate-500 mb-6">No hay una campaña de canastón abierta actualmente.</p>
@@ -386,7 +386,7 @@ export default function Dashboard() {
               <StatCard label="Eventos (Este Mes)" value={dashboardData.total_eventos} icon={CalendarCheck} color="bg-emerald-500" />
             </div>
 
-            <div className="bg-white p-8 rounded-3xl shadow-sm border border-slate-100">
+            <div className="bg-white p-6 rounded-3xl shadow-sm border border-slate-100">
               <h3 className="text-xl font-bold text-slate-800 mb-6">Últimos Eventos de la Banda</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {dashboardData.eventos_recientes?.map((evento, idx) => (

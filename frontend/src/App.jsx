@@ -41,7 +41,7 @@ function ProtectedRoutes() {
       <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
 
       {/* Contenido principal */}
-      <div className="flex-1 flex flex-col overflow-hidden min-w-0">
+      <div className="flex-1 flex flex-col overflow-x-hidden min-w-0">
 
         {/* Top Header — responsivo */}
         <header className="bg-white border-b border-gray-200 h-14 md:h-16 flex items-center justify-between px-4 md:px-6 shrink-0 shadow-sm z-20">
@@ -92,7 +92,7 @@ function ProtectedRoutes() {
         </header>
 
         {/* Contenido de páginas */}
-        <main className="flex-1 overflow-y-auto p-4 md:p-6 lg:p-8">
+        <main className="flex-1 overflow-y-auto p-3 md:p-5">
           <Routes>
             <Route path="/"                        element={<Navigate to="/dashboard" />} />
             <Route path="/dashboard"               element={<Dashboard />} />
