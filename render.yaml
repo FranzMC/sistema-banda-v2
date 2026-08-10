@@ -10,19 +10,12 @@ services:
       - type: rewrite
         source: /*
         destination: /index.html
-    autoDeploy: true
 
   - type: web
     name: sis-banda-api
     runtime: python
     plan: free
-    buildCommand: >
-      pip install -r requirements.txt &&
-      python manage.py migrate --noinput &&
-      python manage.py collectstatic --noinput &&
-      (python seed_modulos.py || true) &&
-      (python create_admin.py || true) &&
-      (python import_musicos.py || true)
+    buildCommand: pip install -r requirements.txt && python manage.py migrate --noinput && python manage.py collectstatic --noinput && python seed_modulos.py || true && python create_admin.py || true && python manage.py importar_musicos || true
     startCommand: gunicorn core.wsgi:application --workers 2 --timeout 120 --bind 0.0.0.0:$PORT
     healthCheckPath: /api/
     autoDeploy: true
