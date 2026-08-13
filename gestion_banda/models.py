@@ -366,6 +366,10 @@ class Evento(models.Model):
 
         ('GALA', 'Uniforme de Gala'),
 
+        ('NEGRO', 'Uniforme Negro'),
+
+        ('DIANA', 'Uniforme de Diana'),
+
         ('DIARIO', 'Uniforme Diario'),
 
         ('VIAJE', 'Uniforme de Viaje'),
