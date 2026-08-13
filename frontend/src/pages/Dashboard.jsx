@@ -108,7 +108,7 @@ export default function Dashboard() {
         <div className="bg-white/70 backdrop-blur-md rounded-3xl p-6 shadow-sm border border-slate-100 flex flex-col md:flex-row flex-wrap items-start md:items-center justify-between gap-4">
           <div>
             <h1 className="text-2xl md:text-3xl font-extrabold text-slate-900 mb-2 tracking-tight">
-              Hola, <span className="text-blue-600 bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-indigo-600">{user?.first_name || dashboardData?.usuario_nombre || 'Usuario'}</span>
+              Hola, <span className="text-blue-600 bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-indigo-600">{user?.first_name || dashboardData?.usuario_nombre || user?.username || 'Usuario'}</span>
             </h1>
             <p className="text-slate-500 font-medium">Banda de Música Espectacular Mejillones "Eco de los Andes"</p>
           </div>

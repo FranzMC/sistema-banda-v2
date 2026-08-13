@@ -7,21 +7,31 @@ import {
 } from 'lucide-react';
 import MultiEventoModal from '../components/MultiEventoModal';
 
+const UNIFORME_DETALLES = {
+  GALA: 'ZAPATOS, MEDIAS Y CINTURÓN CAFÉ, PANTALÓN Y CAMISA MARFIL, CORBATA ACTUAL Y SACO MOSTAZA.',
+  NEGRO: 'ZAPATOS, MEDIAS, CINTURÓN Y PANTALÓN NEGRO, CORBATA ACTUAL Y SACO MOSTAZA.',
+  DIANA: 'TRAJE ENTERO BEIGE, MEDIAS Y CINTURÓN CAFÉS, ZAPATOS NUEVOS, CAMISA BLANCA Y CORBATA DE DIANA.',
+  VIAJE: 'ZAPATOS, MEDIAS Y CINTURÓN CAFÉ Y NEGRO, PANTALÓN MARFIL Y NEGRO, CAMISA MARFIL Y NEGRO, CORBATA ACTUAL Y SACO MOSTAZA. VIAJE CON CHAMARRA Y DEPORTIVO DE LA INSTITUCIÓN. "CON SOMBREROS".',
+  OTRO: ''
+};
+
 const initialFormState = {
   id: null,
   titulo: '',
-  uniforme: 'DIARIO',
-  detalles_uniforme: '',
+  uniforme: 'GALA',
+  detalles_uniforme: UNIFORME_DETALLES['GALA'],
   lugar_concentracion: '',
   fecha_hora_cita: '',
-  uniforme_personalizado: '',
+  uniforme_personalizado: UNIFORME_DETALLES['GALA'],
   convocados: []
 };
 
 const UNIFORMES = [
-  { value: 'GALA', label: 'Uniforme de Gala' },
-  { value: 'DIARIO', label: 'Uniforme de Diana' },
-  { value: 'OTRO', label: 'Otro (especificar)' }
+  { value: 'GALA', label: 'Gala' },
+  { value: 'NEGRO', label: 'Negro' },
+  { value: 'DIANA', label: 'Diana' },
+  { value: 'VIAJE', label: 'Viaje' },
+  { value: 'OTRO', label: 'Otro' }
 ];
 
 export default function Eventos() {
@@ -91,7 +101,23 @@ export default function Eventos() {
     if (type === 'text') {
       value = value.toUpperCase();
     }
-    setFormData({ ...formData, [name]: value });
+    
+    setFormData(prev => {
+        let updated = { ...prev, [name]: value };
+        if (name === 'uniforme' && value !== 'OTRO') {
+            updated.detalles_uniforme = UNIFORME_DETALLES[value] || '';
+            updated.uniforme_personalizado = UNIFORME_DETALLES[value] || '';
+        } else if (name === 'uniforme' && value === 'OTRO') {
+            updated.detalles_uniforme = '';
+            updated.uniforme_personalizado = '';
+        }
+        
+        if (name === 'detalles_uniforme' && updated.uniforme === 'OTRO') {
+            updated.uniforme_personalizado = value;
+        }
+        
+        return updated;
+    });
   };
 
   const handleConvocadosChange = (musicoId) => {
@@ -144,11 +170,11 @@ export default function Eventos() {
     setFormData({
       id: evento.id,
       titulo: evento.titulo || '',
-      uniforme: evento.uniforme || 'DIARIO',
-      detalles_uniforme: evento.detalles_uniforme || '',
+      uniforme: evento.uniforme || 'GALA',
+      detalles_uniforme: evento.detalles_uniforme || (UNIFORME_DETALLES[evento.uniforme || 'GALA'] || ''),
       lugar_concentracion: evento.lugar_concentracion || '',
       fecha_hora_cita: evento.fecha_hora_cita ? evento.fecha_hora_cita.slice(0, 16) : '',
-      uniforme_personalizado: evento.uniforme_personalizado || '',
+      uniforme_personalizado: evento.uniforme_personalizado || (UNIFORME_DETALLES[evento.uniforme || 'GALA'] || ''),
       convocados: evento.convocados || []
     });
     setViewingEvento(null);
@@ -161,11 +187,11 @@ export default function Eventos() {
     setFormData({
       id: evento.id,
       titulo: evento.titulo || '',
-      uniforme: evento.uniforme || 'DIARIO',
-      detalles_uniforme: evento.detalles_uniforme || '',
+      uniforme: evento.uniforme || 'GALA',
+      detalles_uniforme: evento.detalles_uniforme || (UNIFORME_DETALLES[evento.uniforme || 'GALA'] || ''),
       lugar_concentracion: evento.lugar_concentracion || '',
       fecha_hora_cita: evento.fecha_hora_cita ? evento.fecha_hora_cita.slice(0, 16) : '',
-      uniforme_personalizado: evento.uniforme_personalizado || '',
+      uniforme_personalizado: evento.uniforme_personalizado || (UNIFORME_DETALLES[evento.uniforme || 'GALA'] || ''),
       convocados: evento.convocados || []
     });
     setViewingEvento(evento);
@@ -519,17 +545,19 @@ export default function Eventos() {
                             {UNIFORMES.map(u => <option key={u.value} value={u.value}>{u.label}</option>)}
                           </select>
                         </div>
-                        <div>
-                          <label className="block text-gray-700 font-bold mb-2">Especifique el Uniforme</label>
-                          <input type="text" name="uniforme_personalizado" value={formData.uniforme_personalizado || ''} onChange={handleChange} placeholder="Ej: Camisa blanca y jean"
-                            className="w-full px-5 py-4 rounded-2xl border-2 border-gray-200 focus:ring-0 focus:border-blue-500 outline-none text-lg transition-all bg-white hover:border-gray-300" />
+                        <div className="md:col-span-2">
+                          <label className="block text-gray-700 font-bold mb-2">
+                            {formData.uniforme === 'OTRO' ? 'Especifique el Uniforme *' : 'Detalles del Uniforme'}
+                          </label>
+                          <textarea 
+                            name="detalles_uniforme" 
+                            value={formData.detalles_uniforme || ''} 
+                            onChange={handleChange} 
+                            placeholder="Ej: Pantalón negro, camisa blanca..." 
+                            rows={3}
+                            className="w-full px-5 py-4 rounded-2xl border-2 outline-none text-lg transition-all bg-white border-gray-200 focus:ring-0 focus:border-blue-500 hover:border-gray-300"
+                          />
                         </div>
-                      </div>
-                      
-                      <div className="mt-6">
-                        <label className="block text-gray-700 font-bold mb-2">Detalles Adicionales del Uniforme</label>
-                        <input type="text" name="detalles_uniforme" value={formData.detalles_uniforme || ''} onChange={handleChange} placeholder="Opcional. Ej: Corbata guinda"
-                          className="w-full px-5 py-4 rounded-2xl border-2 border-gray-200 focus:ring-0 focus:border-blue-500 outline-none text-lg transition-all bg-white hover:border-gray-300" />
                       </div>
                     </div>
                   )}

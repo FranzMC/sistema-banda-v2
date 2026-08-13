@@ -6,13 +6,20 @@ import api from '../services/api';
 
 const UNIFORMES = [
   { value: 'GALA', label: 'Gala' },
-  { value: 'DIARIO', label: 'Diario' },
-  { value: 'VIAJE', label: 'Viaje' },
-  { value: 'VELADA', label: 'Velada' },
+  { value: 'NEGRO', label: 'Negro' },
   { value: 'DIANA', label: 'Diana' },
-  { value: 'RECOJO', label: 'Recojo' },
+  { value: 'VIAJE', label: 'Viaje' },
   { value: 'OTRO', label: 'Otro' },
 ];
+
+const UNIFORME_DETALLES = {
+  GALA: 'ZAPATOS, MEDIAS Y CINTURÓN CAFÉ, PANTALÓN Y CAMISA MARFIL, CORBATA ACTUAL Y SACO MOSTAZA.',
+  NEGRO: 'ZAPATOS, MEDIAS, CINTURÓN Y PANTALÓN NEGRO, CORBATA ACTUAL Y SACO MOSTAZA.',
+  DIANA: 'TRAJE ENTERO BEIGE, MEDIAS Y CINTURÓN CAFÉS, ZAPATOS NUEVOS, CAMISA BLANCA Y CORBATA DE DIANA.',
+  VIAJE: 'ZAPATOS, MEDIAS Y CINTURÓN CAFÉ Y NEGRO, PANTALÓN MARFIL Y NEGRO, CAMISA MARFIL Y NEGRO, CORBATA ACTUAL Y SACO MOSTAZA. VIAJE CON CHAMARRA Y DEPORTIVO DE LA INSTITUCIÓN. "CON SOMBREROS".',
+  OTRO: ''
+};
+
 
 const EVENT_COLORS = [
   { bg: 'bg-blue-500', light: 'bg-blue-50', border: 'border-blue-400', text: 'text-blue-700', badge: 'bg-blue-500 text-white', ring: 'ring-blue-400', dot: '#3b82f6' },
@@ -312,7 +319,7 @@ export default function MultiEventoModal({ isOpen, onClose, onSaveSuccess, userR
   const [fecha, setFecha] = useState('');
   const [activeEventoId, setActiveEventoId] = useState('ev-1');
   const [eventos, setEventos] = useState([
-    { id: 'ev-1', titulo: '', uniforme: 'GALA', hora: '08:00', detalles_uniforme: '', lugar_concentracion: '', uniforme_personalizado: '', convocados: [] }
+    { id: 'ev-1', titulo: '', uniforme: 'GALA', hora: '08:00', detalles_uniforme: UNIFORME_DETALLES['GALA'], lugar_concentracion: '', uniforme_personalizado: UNIFORME_DETALLES['GALA'], convocados: [] }
   ]);
   const [musicos, setMusicos] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -336,7 +343,7 @@ export default function MultiEventoModal({ isOpen, onClose, onSaveSuccess, userR
 
   const handleAddEvento = () => {
     const newId = `ev-${Date.now()}`;
-    setEventos([...eventos, { id: newId, titulo: '', uniforme: 'GALA', hora: '08:00', detalles_uniforme: '', lugar_concentracion: '', uniforme_personalizado: '', convocados: [] }]);
+    setEventos([...eventos, { id: newId, titulo: '', uniforme: 'GALA', hora: '08:00', detalles_uniforme: UNIFORME_DETALLES['GALA'], lugar_concentracion: '', uniforme_personalizado: UNIFORME_DETALLES['GALA'], convocados: [] }]);
     setActiveEventoId(newId);
   };
 
@@ -348,7 +355,25 @@ export default function MultiEventoModal({ isOpen, onClose, onSaveSuccess, userR
   };
 
   const handleEventoChange = (id, field, value) => {
-    setEventos(eventos.map(e => e.id === id ? { ...e, [field]: value } : e));
+    setEventos(eventos.map(e => {
+      if (e.id === id) {
+        let updated = { ...e, [field]: value };
+        if (field === 'uniforme' && value !== 'OTRO') {
+            updated.detalles_uniforme = UNIFORME_DETALLES[value] || '';
+            updated.uniforme_personalizado = UNIFORME_DETALLES[value] || '';
+        } else if (field === 'uniforme' && value === 'OTRO') {
+            updated.detalles_uniforme = '';
+            updated.uniforme_personalizado = '';
+        }
+        
+        if (field === 'detalles_uniforme' && updated.uniforme === 'OTRO') {
+            updated.uniforme_personalizado = value;
+        }
+
+        return updated;
+      }
+      return e;
+    }));
   };
 
   const toggleMusico = useCallback((musicoId) => {
@@ -490,8 +515,16 @@ export default function MultiEventoModal({ isOpen, onClose, onSaveSuccess, userR
                   </select>
                 </div>
                 <div className="lg:col-span-2">
-                  <label className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1 block">Especifique el Uniforme</label>
-                  <input type="text" value={activeEvento.uniforme_personalizado || ''} onChange={e => handleEventoChange(activeEvento.id, 'uniforme_personalizado', e.target.value)} placeholder="Ej: Pantalón negro, camisa blanca..." className="w-full bg-white border border-slate-300 rounded-xl px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-blue-400 transition-all" />
+                  <label className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1 block">
+                    {activeEvento.uniforme === 'OTRO' ? 'Especifique el Uniforme *' : 'Detalles del Uniforme'}
+                  </label>
+                  <textarea 
+                    value={activeEvento.detalles_uniforme || ''} 
+                    onChange={e => handleEventoChange(activeEvento.id, 'detalles_uniforme', e.target.value)} 
+                    placeholder="Ej: Pantalón negro, camisa blanca..." 
+                    rows={2}
+                    className="w-full border border-slate-300 rounded-xl px-3 py-2.5 text-sm outline-none transition-all bg-white focus:ring-2 focus:ring-blue-400" 
+                  />
                 </div>
                 <div className="lg:col-span-2">
                   <label className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1 block">Lugar de Concentración</label>
