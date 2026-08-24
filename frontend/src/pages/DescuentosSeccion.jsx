@@ -195,7 +195,7 @@ export default function DescuentosSeccion() {
   });
 
   const exportToPDF = () => {
-    const doc = new jsPDF();
+    const doc = new jsPDF('landscape');
     const pageWidth = doc.internal.pageSize.getWidth();
     
     doc.setFontSize(18);
@@ -231,11 +231,11 @@ export default function DescuentosSeccion() {
       styles: { fontSize: 9, valign: 'middle', lineColor: [234, 179, 8], lineWidth: 0.5 },
       alternateRowStyles: { fillColor: [248, 250, 252] },
       columnStyles: {
-        0: { cellWidth: 25 },
-        1: { cellWidth: 40 },
-        2: { cellWidth: 40 },
-        3: { cellWidth: 50 },
-        4: { cellWidth: 25, halign: 'right', fontStyle: 'bold', textColor: [30, 58, 138] }
+        0: { cellWidth: 35 },
+        1: { cellWidth: 60 },
+        2: { cellWidth: 60 },
+        3: { cellWidth: 80 },
+        4: { cellWidth: 35, halign: 'right', fontStyle: 'bold', textColor: [30, 58, 138] }
       },
     });
     

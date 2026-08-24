@@ -81,14 +81,17 @@ def create_bulk_descuentos_seccion(user, data):
         else:
             return {'success': False, 'error': 'Permisos insuficientes', 'status': 403}
 
-        # Pre-cargar todos los mÃºsicos necesarios en una sola query (evita N+1)
+        # Pre-cargar todos los músicos necesarios en una sola query (evita N+1)
         musico_ids = [d.get('musico_id') for d in descuentos_data if d.get('musico_id')]
         musicos_map = Musico.objects.in_bulk(musico_ids)
 
+        # Determinar los instrumentos permitidos (importante para PERCUSION que abarca BOMBO, TAMBOR, PLATILLOS)
+        instrumentos_permitidos_jefe = user.get_instrumentos_encargados() if user.rol == 'JEFE_SECCION' else []
+
         creados = []
         with transaction.atomic():
-            # Eliminamos la lÃ³gica de borrado porque la app mÃ³vil envÃ­a solo los descuentos no sincronizados
-            # Usamos get_or_create mÃ¡s abajo para evitar duplicados en caso de reintentos
+            # Eliminamos la lógica de borrado porque la app móvil envía solo los descuentos no sincronizados
+            # Usamos get_or_create más abajo para evitar duplicados en caso de reintentos
 
             for descuento_data in descuentos_data:
                 musico_id = descuento_data.get('musico_id')
@@ -103,9 +106,14 @@ def create_bulk_descuentos_seccion(user, data):
                 if not musico:
                     continue
 
-                # Verificar que el mÃºsico pertenece a la secciÃ³n
-                if musico.instrumento != seccion_reporte:
-                    continue
+                # Verificar que el músico pertenece a los instrumentos permitidos del jefe
+                if user.rol == 'JEFE_SECCION' and instrumentos_permitidos_jefe:
+                    if musico.instrumento not in instrumentos_permitidos_jefe:
+                        continue
+                elif user.rol == 'JEFE_SECCION':
+                    # Si el jefe no tiene instrumentos asignados, verificar por seccion_reporte
+                    if musico.instrumento != seccion_reporte:
+                        continue
 
                 descuento, created = Descuento.objects.get_or_create(
                     musico=musico,

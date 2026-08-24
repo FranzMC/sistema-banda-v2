@@ -48,12 +48,22 @@ class MusicoSerializer(serializers.ModelSerializer):
 
 
 class MusicoListSerializer(serializers.ModelSerializer):
-    """Serializer ligero para listados (app móvil)"""
+    """
+    Serializer para la app móvil.
+    Devuelve todos los campos necesarios tanto para listado como para
+    pre-llenar el formulario de edición del Jefe de Sección.
+    """
     nombre_completo = serializers.CharField(read_only=True)
-    
+
     class Meta:
         model = Musico
-        fields = ['id', 'nombre_completo', 'documento_identidad', 'instrumento', 'nivel', 'activo']
+        fields = [
+            'id', 'nombre_completo', 'nombres', 'apellidos',
+            'documento_identidad', 'telefono', 'direccion',
+            'instrumento', 'nivel', 'activo',
+            'talla_camisa', 'talla_chamarra', 'numero_calzado',
+            'fecha_nacimiento', 'foto_perfil', 'orden', 'created_at',
+        ]
 
 
 class ContratoMusicoSerializer(serializers.ModelSerializer):

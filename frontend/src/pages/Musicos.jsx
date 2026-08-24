@@ -272,7 +272,7 @@ export default function Musicos() {
               setFormData(initialFormState); // Asegurarse de que el formulario esté vacío
               setIsModalOpen(true);
             }}
-            className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-xl font-medium transition-colors shadow-sm"
+            className="flex items-center gap-2 bg-red-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-xl font-medium transition-colors shadow-sm"
           >
             <Plus className="w-5 h-5" />
             Nuevo Músico

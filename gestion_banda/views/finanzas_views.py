@@ -135,10 +135,17 @@ class DescuentoViewSet(viewsets.ModelViewSet):
         actualizados = 0
         errores = []
 
-        # Jefe de sección
+        # BUG FIX 8: Buscar JefeSeccion correctamente por la relación real
+        # La relación es: JefeSeccion.musico.usuario = user
         jefe_seccion = None
-        if user.rol == 'JEFE_SECCION' and hasattr(user, 'jefe_seccion_perfil'):
-            jefe_seccion = user.jefe_seccion_perfil
+        instrumentos_permitidos = []
+        if user.rol == 'JEFE_SECCION':
+            try:
+                jefe_seccion = JefeSeccion.objects.get(musico__usuario=user, activo=True)
+            except JefeSeccion.DoesNotExist:
+                jefe_seccion = None
+            # Obtener instrumentos permitidos desde el campo seccion_encargada del usuario
+            instrumentos_permitidos = user.get_instrumentos_encargados()
 
         for data in faltas_data:
             try:
@@ -146,17 +153,24 @@ class DescuentoViewSet(viewsets.ModelViewSet):
                 musico_id = data.get('musico_id')
                 evento_id = data.get('evento_id')
                 monto = data.get('monto')
-                motivo = data.get('motivo')
+                motivo = data.get('motivo') or data.get('concepto')
                 fecha_falta = data.get('fecha_falta')
 
                 if not uuid_str or not musico_id or not evento_id or not monto or not motivo:
-                    errores.append({'uuid': uuid_str, 'error': 'Faltan campos obligatorios'})
+                    errores.append({'uuid': uuid_str, 'error': 'Faltan campos obligatorios (uuid, musico_id, evento_id, monto, motivo)'})
                     continue
 
-                # Validar permisos si es JEFE_SECCION
-                # Omitiremos la validación estricta de sección aquí por brevedad,
-                # pero se podría agregar comprobando musico.instrumento == user.seccion_encargada
-                
+                # Validar permisos de sección para JEFE_SECCION
+                if user.rol == 'JEFE_SECCION' and instrumentos_permitidos:
+                    try:
+                        musico_obj = Musico.objects.get(id=musico_id)
+                        if musico_obj.instrumento not in instrumentos_permitidos:
+                            errores.append({'uuid': uuid_str, 'error': f'No tienes permiso para aplicar descuento al músico de sección {musico_obj.instrumento}'})
+                            continue
+                    except Musico.DoesNotExist:
+                        errores.append({'uuid': uuid_str, 'error': f'Músico con id {musico_id} no existe'})
+                        continue
+
                 descuento, created = Descuento.objects.update_or_create(
                     uuid=uuid_str,
                     defaults={
