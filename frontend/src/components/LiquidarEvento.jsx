@@ -387,6 +387,30 @@ export default function LiquidarEvento({ eventos, musicos, selectedEvento, setSe
       setColumnasExtra(columnasExtra.filter(c => c.id !== colId));
   };
 
+  const handleAplicarTotalATodos = () => {
+    const montoStr = window.prompt("Ingrese el monto TOTAL a asignar a todos los músicos que aún no han sido pagados:");
+    if (montoStr === null || montoStr.trim() === "") return;
+    
+    const monto = parseFloat(montoStr);
+    if (isNaN(monto) || monto < 0) {
+      alert("Por favor, ingrese un monto válido mayor o igual a 0.");
+      return;
+    }
+
+    const nuevosDatos = { ...datosMusicos };
+    musicos.forEach(musico => {
+      // Solo sobreescribir si NO está pagado ya
+      const isPagado = musicosYaPagados.includes(musico.id) || musicosPagados[musico.id];
+      if (!isPagado) {
+        if (!nuevosDatos[musico.id]) {
+          nuevosDatos[musico.id] = {};
+        }
+        nuevosDatos[musico.id].acordado = monto.toString();
+      }
+    });
+    setDatosMusicos(nuevosDatos);
+  };
+
   // ─── EXPORTAR PDF ─────────────────────────────────────────────────────────────
   const handleExportarPDF = () => {
     if (!selectedEvento) return;
@@ -1079,7 +1103,18 @@ export default function LiquidarEvento({ eventos, musicos, selectedEvento, setSe
                   <thead className="bg-gray-800 text-white sticky top-0 z-20 shadow-md">
                      <tr>
                         <th className="px-4 py-4 font-bold border-b min-w-[150px] uppercase text-xs tracking-wider sticky left-0 top-0 bg-gray-800 z-30 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.3)]">Músico</th>
-                        <th className="px-2 py-4 font-bold border-b text-right w-24 uppercase text-xs tracking-wider text-green-300">TOTAL</th>
+                        <th className="px-2 py-4 font-bold border-b text-right w-24 uppercase text-xs tracking-wider text-green-300">
+                           <div className="flex flex-col items-end gap-1">
+                              <span>TOTAL</span>
+                              <button 
+                                 onClick={handleAplicarTotalATodos}
+                                 className="text-[9px] bg-green-500 hover:bg-green-600 text-white px-1.5 py-0.5 rounded shadow-sm whitespace-nowrap normal-case"
+                                 title="Aplicar monto a todos"
+                              >
+                                 Llenar a todos
+                              </button>
+                           </div>
+                        </th>
                         <th className="px-2 py-4 font-bold border-b text-right w-24 text-red-300 uppercase text-xs tracking-wider">DESC. SECCIÓN</th>
                         {columnasExtra.map(col => (
                             <th key={col.id} className="px-2 py-4 font-bold border-b text-right min-w-[100px] max-w-[140px] text-blue-200 uppercase text-xs tracking-wider">
