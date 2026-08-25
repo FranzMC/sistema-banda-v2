@@ -579,9 +579,9 @@ export default function LiquidarEvento({ eventos, musicos, selectedEvento, setSe
 
     // ── Calcular anchos de columna proporcionales ─────────────────────────────────
     const usableWidth = pageWidth - marginX * 2;
-    const fixedCols   = { num: 7, musico: 48, total: 20, descSec: 22, adelanto: 20, saldo: 22, estado: 20 };
+    const fixedCols   = { num: 7, musico: 38, total: 18, descSec: 20, adelanto: 18, saldo: 20, estado: 18 };
     const extraWidth  = columnasExtra.length > 0
-      ? Math.min(20, (usableWidth - Object.values(fixedCols).reduce((a,b)=>a+b,0)) / columnasExtra.length)
+      ? Math.max(16, (usableWidth - Object.values(fixedCols).reduce((a,b)=>a+b,0)) / columnasExtra.length)
       : 0;
 
     const columnStyles = {
@@ -1080,7 +1080,7 @@ export default function LiquidarEvento({ eventos, musicos, selectedEvento, setSe
                      <tr>
                         <th className="px-4 py-4 font-bold border-b min-w-[150px] uppercase text-xs tracking-wider sticky left-0 top-0 bg-gray-800 z-30 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.3)]">Músico</th>
                         <th className="px-2 py-4 font-bold border-b text-right w-24 uppercase text-xs tracking-wider text-green-300">TOTAL</th>
-                        <th className="px-2 py-4 font-bold border-b text-right w-24 text-red-300 uppercase text-xs tracking-wider">Descuento</th>
+                        <th className="px-2 py-4 font-bold border-b text-right w-24 text-red-300 uppercase text-xs tracking-wider">DESC. SECCIÓN</th>
                         {columnasExtra.map(col => (
                             <th key={col.id} className="px-2 py-4 font-bold border-b text-right min-w-[100px] max-w-[140px] text-blue-200 uppercase text-xs tracking-wider">
                                 <div className="flex items-center justify-end gap-1">
