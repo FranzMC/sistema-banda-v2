@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import api from '../services/api';
-import { Calendar, Save, FileText, Upload, DollarSign, CheckCircle, Plus, X, Eye, EyeOff, Settings, Search } from 'lucide-react';
+import { Calendar, Save, FileText, Upload, DollarSign, CheckCircle, Plus, X, Eye, EyeOff, Settings, Search, Download } from 'lucide-react';
 import FileUploader from './FileUploader';
 import MultiFileUploader from './MultiFileUploader';
 import DescuentosResumenModal from './DescuentosResumenModal';
 import Notification from './Notification';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
 
 export default function LiquidarEvento({ eventos, musicos, selectedEvento, setSelectedEvento, onPlanillaGuardada }) {
   const [datosMusicos, setDatosMusicos] = useState({});
@@ -385,7 +387,296 @@ export default function LiquidarEvento({ eventos, musicos, selectedEvento, setSe
       setColumnasExtra(columnasExtra.filter(c => c.id !== colId));
   };
 
+  // ─── EXPORTAR PDF ─────────────────────────────────────────────────────────────
+  const handleExportarPDF = () => {
+    if (!selectedEvento) return;
+    const eventoObj = eventos.find(e => e.id == selectedEvento);
+    const eventoTitulo = eventoObj?.titulo || 'Evento';
+
+    // Orden de secciones definido por el usuario
+    const seccionesOrdenadas = [
+      { titulo: 'TROMPETAS',           condition: m => m.instrumento === 'TROMPETA' },
+      { titulo: 'SAXO Y CLARINETE',    condition: m => m.instrumento === 'CLARINETE' || m.instrumento === 'SAXOFON' },
+      { titulo: 'BARÍTONOS',           condition: m => m.instrumento === 'BARITONO' },
+      { titulo: 'TROMBONES',           condition: m => m.instrumento === 'TROMBON' },
+      { titulo: 'TUBAS',               condition: m => m.instrumento === 'TUBA' },
+      { titulo: 'PERCUSIÓN (BOMBO, TAMBOR Y PLATILLOS)',
+        condition: m => ['BOMBO', 'TAMBOR', 'PLATILLOS', 'PERCUSION'].includes(m.instrumento) },
+      { titulo: 'OTROS',
+        condition: m => !['TROMPETA','CLARINETE','SAXOFON','BARITONO','TROMBON','TUBA','BOMBO','TAMBOR','PLATILLOS','PERCUSION'].includes(m.instrumento) },
+    ];
+
+    const convocadosIds = eventoObj ? eventoObj.convocados : [];
+    const musicosConvocados = musicos.filter(m => convocadosIds.includes(m.id));
+
+    // Determinar orientación según cantidad de columnas
+    const totalCols = 4 + columnasExtra.length; // Músico + TOTAL + Desc Sección + extras + Adelanto + SALDO + Estado
+    const orientation = totalCols > 6 ? 'landscape' : 'portrait';
+    const pageWidth = orientation === 'landscape' ? 279.4 : 215.9; // mm
+    const pageHeight = orientation === 'landscape' ? 215.9 : 279.4;
+
+    const doc = new jsPDF({ orientation, unit: 'mm', format: 'letter' });
+
+    // ── Encabezado ──────────────────────────────────────────────────────────────
+    const marginX = 14;
+    let cursorY = 14;
+
+    // Título principal
+    doc.setFontSize(16);
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(30, 30, 30);
+    doc.text('REPORTE DE LIQUIDACIONES', pageWidth / 2, cursorY, { align: 'center' });
+    cursorY += 7;
+
+    // Nombre del evento
+    doc.setFontSize(12);
+    doc.setTextColor(60, 60, 60);
+    doc.text(eventoTitulo.toUpperCase(), pageWidth / 2, cursorY, { align: 'center' });
+    cursorY += 6;
+
+    // Nombre de la banda
+    doc.setFontSize(9);
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(80, 80, 80);
+    doc.text(
+      'BANDA DE MÚSICA INTERNACIONAL ESPECTACULAR MEJILLONES DE BOLIVIA ECO DE LOS ANDES',
+      pageWidth / 2, cursorY, { align: 'center' }
+    );
+    cursorY += 5;
+
+    // Línea separadora
+    doc.setDrawColor(180, 180, 180);
+    doc.line(marginX, cursorY, pageWidth - marginX, cursorY);
+    cursorY += 4;
+
+    // Fecha de generación
+    const ahora = new Date();
+    const fechaStr = ahora.toLocaleDateString('es-BO', { day: '2-digit', month: '2-digit', year: 'numeric' });
+    const horaStr = ahora.toLocaleTimeString('es-BO', { hour: '2-digit', minute: '2-digit' });
+    doc.setFontSize(7.5);
+    doc.setTextColor(120, 120, 120);
+    doc.text(`Fecha de generación: ${fechaStr}  ${horaStr}`, marginX, cursorY);
+    cursorY += 5;
+
+    // ── Definir columnas de la tabla ─────────────────────────────────────────────
+    const head = [
+      [
+        { content: 'N°',              styles: { halign: 'center', fontStyle: 'bold' } },
+        { content: 'MÚSICO',          styles: { halign: 'left',   fontStyle: 'bold' } },
+        { content: 'TOTAL (Bs.)',     styles: { halign: 'right',  fontStyle: 'bold' } },
+        { content: 'DESC. SECCIÓN',   styles: { halign: 'right',  fontStyle: 'bold' } },
+        ...columnasExtra.map(col => ({
+          content: col.nombre,
+          styles: { halign: 'right', fontStyle: 'bold' }
+        })),
+        { content: 'ADELANTO',        styles: { halign: 'right',  fontStyle: 'bold' } },
+        { content: 'SALDO (Bs.)',     styles: { halign: 'right',  fontStyle: 'bold' } },
+        { content: 'ESTADO',          styles: { halign: 'center', fontStyle: 'bold' } },
+      ]
+    ];
+
+    // ── Construir filas ──────────────────────────────────────────────────────────
+    const body = [];
+    let totalGenAcordado = 0;
+    let totalGenMultas   = 0;
+    let totalGenExtras   = columnasExtra.map(() => 0);
+    let totalGenAdelantos= 0;
+    let totalGenSaldo    = 0;
+    let numGlobal        = 1;
+
+    seccionesOrdenadas.forEach(seccion => {
+      const musicosSeccion = musicosConvocados.filter(seccion.condition);
+      if (musicosSeccion.length === 0) return;
+
+      // Fila de encabezado de sección
+      const colCount = 4 + columnasExtra.length + 4; // N° + Músico + cols
+      body.push([{
+        content: seccion.titulo,
+        colSpan: colCount,
+        styles: {
+          fillColor: [30, 30, 30],
+          textColor: [255, 255, 255],
+          fontStyle: 'bold',
+          fontSize: 8,
+          halign: 'left',
+          cellPadding: { top: 3, bottom: 3, left: 4, right: 4 },
+        }
+      }]);
+
+      let subAcordado  = 0;
+      let subMultas    = 0;
+      let subExtras    = columnasExtra.map(() => 0);
+      let subAdelantos = 0;
+      let subSaldo     = 0;
+
+      musicosSeccion.forEach(musico => {
+        const d  = datosMusicos[musico.id] || {};
+        const a  = parseInt(d.acordado  || 0);
+        const m  = parseInt(d.multas    || 0);
+        const ad = parseInt(d.adelantos || 0);
+        let extras = 0;
+        const extrasVals = columnasExtra.map(col => {
+          const v = parseInt(d[col.id] || 0);
+          extras += v;
+          return v;
+        });
+        const saldo = a - m - ad - extras;
+        const cancelado = musicosYaPagados.includes(musico.id) || musicosPagados[musico.id];
+
+        subAcordado  += a;
+        subMultas    += m;
+        subAdelantos += ad;
+        subSaldo     += saldo;
+        subExtras     = subExtras.map((v, i) => v + extrasVals[i]);
+
+        totalGenAcordado  += a;
+        totalGenMultas    += m;
+        totalGenAdelantos += ad;
+        totalGenSaldo     += saldo;
+        totalGenExtras     = totalGenExtras.map((v, i) => v + extrasVals[i]);
+
+        body.push([
+          { content: numGlobal++,                                      styles: { halign: 'center', fontSize: 7.5, textColor: [80,80,80] } },
+          { content: `${musico.nombres} ${musico.apellidos}`,          styles: { halign: 'left',   fontSize: 7.5, fontStyle: 'bold' } },
+          { content: a  > 0 ? a.toLocaleString('es-BO')  : '—',       styles: { halign: 'right',  fontSize: 7.5, textColor: [20,120,20] } },
+          { content: m  > 0 ? m.toLocaleString('es-BO')  : '—',       styles: { halign: 'right',  fontSize: 7.5, textColor: [180,30,30] } },
+          ...extrasVals.map(v => ({
+            content: v > 0 ? v.toLocaleString('es-BO') : '—',
+            styles:  { halign: 'right', fontSize: 7.5, textColor: [30,80,160] }
+          })),
+          { content: ad > 0 ? ad.toLocaleString('es-BO') : '—',       styles: { halign: 'right',  fontSize: 7.5, textColor: [180,100,0] } },
+          { content: saldo.toLocaleString('es-BO'),
+            styles: { halign: 'right', fontSize: 7.5, fontStyle: 'bold',
+                      textColor: saldo >= 0 ? [20,120,20] : [180,30,30] } },
+          { content: cancelado ? 'CANCELADO' : 'PENDIENTE',
+            styles: { halign: 'center', fontSize: 7,
+                      textColor: cancelado ? [20,120,20] : [180,100,0],
+                      fontStyle: 'bold' } },
+        ]);
+      });
+
+      // Subtotal de sección
+      body.push([
+        { content: '', styles: { fillColor: [235,235,235] } },
+        { content: `SUBTOTAL ${seccion.titulo}`,
+          styles: { halign: 'right', fontStyle: 'bold', fontSize: 7.5, fillColor: [235,235,235] } },
+        { content: subAcordado.toLocaleString('es-BO'),
+          styles: { halign: 'right', fontStyle: 'bold', fontSize: 7.5, fillColor: [235,235,235], textColor: [20,100,20] } },
+        { content: subMultas > 0 ? subMultas.toLocaleString('es-BO') : '—',
+          styles: { halign: 'right', fontStyle: 'bold', fontSize: 7.5, fillColor: [235,235,235], textColor: [160,20,20] } },
+        ...subExtras.map(v => ({
+          content: v > 0 ? v.toLocaleString('es-BO') : '—',
+          styles: { halign: 'right', fontStyle: 'bold', fontSize: 7.5, fillColor: [235,235,235], textColor: [20,60,140] }
+        })),
+        { content: subAdelantos > 0 ? subAdelantos.toLocaleString('es-BO') : '—',
+          styles: { halign: 'right', fontStyle: 'bold', fontSize: 7.5, fillColor: [235,235,235], textColor: [160,80,0] } },
+        { content: subSaldo.toLocaleString('es-BO'),
+          styles: { halign: 'right', fontStyle: 'bold', fontSize: 7.5, fillColor: [235,235,235],
+                    textColor: subSaldo >= 0 ? [20,100,20] : [160,20,20] } },
+        { content: '', styles: { fillColor: [235,235,235] } },
+      ]);
+    });
+
+    // ── Fila GRAN TOTAL ──────────────────────────────────────────────────────────
+    body.push([
+      { content: '', styles: { fillColor: [20,20,20] } },
+      { content: 'TOTAL GENERAL',
+        styles: { halign: 'right', fontStyle: 'bold', fontSize: 8, fillColor: [20,20,20], textColor: [255,255,255] } },
+      { content: totalGenAcordado.toLocaleString('es-BO'),
+        styles: { halign: 'right', fontStyle: 'bold', fontSize: 8, fillColor: [20,20,20], textColor: [100,255,100] } },
+      { content: totalGenMultas > 0 ? totalGenMultas.toLocaleString('es-BO') : '—',
+        styles: { halign: 'right', fontStyle: 'bold', fontSize: 8, fillColor: [20,20,20], textColor: [255,120,120] } },
+      ...totalGenExtras.map(v => ({
+        content: v > 0 ? v.toLocaleString('es-BO') : '—',
+        styles: { halign: 'right', fontStyle: 'bold', fontSize: 8, fillColor: [20,20,20], textColor: [120,180,255] }
+      })),
+      { content: totalGenAdelantos > 0 ? totalGenAdelantos.toLocaleString('es-BO') : '—',
+        styles: { halign: 'right', fontStyle: 'bold', fontSize: 8, fillColor: [20,20,20], textColor: [255,180,80] } },
+      { content: totalGenSaldo.toLocaleString('es-BO'),
+        styles: { halign: 'right', fontStyle: 'bold', fontSize: 9, fillColor: [20,20,20], textColor: [255,255,255] } },
+      { content: '', styles: { fillColor: [20,20,20] } },
+    ]);
+
+    // ── Calcular anchos de columna proporcionales ─────────────────────────────────
+    const usableWidth = pageWidth - marginX * 2;
+    const fixedCols   = { num: 7, musico: 48, total: 20, descSec: 22, adelanto: 20, saldo: 22, estado: 20 };
+    const extraWidth  = columnasExtra.length > 0
+      ? Math.min(20, (usableWidth - Object.values(fixedCols).reduce((a,b)=>a+b,0)) / columnasExtra.length)
+      : 0;
+
+    const columnStyles = {
+      0: { cellWidth: fixedCols.num },
+      1: { cellWidth: fixedCols.musico },
+      2: { cellWidth: fixedCols.total },
+      3: { cellWidth: fixedCols.descSec },
+    };
+    columnasExtra.forEach((_, i) => {
+      columnStyles[4 + i] = { cellWidth: extraWidth };
+    });
+    const lastOffset = 4 + columnasExtra.length;
+    columnStyles[lastOffset]     = { cellWidth: fixedCols.adelanto };
+    columnStyles[lastOffset + 1] = { cellWidth: fixedCols.saldo };
+    columnStyles[lastOffset + 2] = { cellWidth: fixedCols.estado };
+
+    // ── Renderizar tabla ─────────────────────────────────────────────────────────
+    autoTable(doc, {
+      head,
+      body,
+      startY: cursorY,
+      margin: { left: marginX, right: marginX },
+      tableWidth: usableWidth,
+      columnStyles,
+      headStyles: {
+        fillColor:  [40, 40, 40],
+        textColor:  [255, 255, 255],
+        fontSize:   7.5,
+        fontStyle:  'bold',
+        halign:     'center',
+        cellPadding: { top: 3, bottom: 3, left: 2, right: 2 },
+      },
+      bodyStyles: {
+        fontSize:    7.5,
+        cellPadding: { top: 2, bottom: 2, left: 2, right: 2 },
+        lineColor:   [220, 220, 220],
+        lineWidth:   0.1,
+      },
+      alternateRowStyles: { fillColor: [250, 250, 250] },
+      didDrawPage: (data) => {
+        // Pie de cada página: generado por y número de página
+        const pageCount = doc.internal.getNumberOfPages();
+        const currentPage = data.pageNumber;
+        const pY = pageHeight - 8;
+
+        // Usuario logueado
+        const userData = localStorage.getItem('user');
+        let userName = 'Sistema';
+        try {
+          if (userData) {
+            const u = JSON.parse(userData);
+            userName = u.nombre_completo || u.username || u.email || 'Sistema';
+          }
+        } catch {}
+
+        doc.setFontSize(7);
+        doc.setTextColor(130, 130, 130);
+        doc.setFont('helvetica', 'italic');
+        doc.text(`Generado por: ${userName}  |  ${fechaStr} ${horaStr}`, marginX, pY);
+        doc.text(`Página ${currentPage} de ${pageCount}`, pageWidth - marginX, pY, { align: 'right' });
+
+        // Línea de pie
+        doc.setDrawColor(200, 200, 200);
+        doc.line(marginX, pY - 3, pageWidth - marginX, pY - 3);
+      },
+    });
+
+    // ── Guardar PDF ──────────────────────────────────────────────────────────────
+    const nombreArchivo = `Liquidacion_${eventoTitulo.replace(/[^a-zA-Z0-9]/g, '_')}_${fechaStr.replace(/\//g, '-')}.pdf`;
+    doc.save(nombreArchivo);
+  };
+  // ─────────────────────────────────────────────────────────────────────────────
+
   const handlePdfUpload = async (fileOrEvent, type) => {
+
     const isMultas = type === 'multas';
     let file = null;
 
@@ -775,13 +1066,22 @@ export default function LiquidarEvento({ eventos, musicos, selectedEvento, setSe
                    />
                  </div>
               </div>
-              <button 
-                 onClick={() => setShowModalColumna(true)}
-                 className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg font-bold transition-all shadow-sm flex items-center gap-2 text-sm whitespace-nowrap"
-              >
-                 <Plus className="w-4 h-4" />
-                 <span>Nuevo Descuento</span>
-              </button>
+              <div className="flex items-center gap-2">
+                <button 
+                  onClick={handleExportarPDF}
+                  className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg font-bold transition-all shadow-sm flex items-center gap-2 text-sm whitespace-nowrap"
+                >
+                  <Download className="w-4 h-4" />
+                  <span>Exportar PDF</span>
+                </button>
+                <button 
+                  onClick={() => setShowModalColumna(true)}
+                  className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg font-bold transition-all shadow-sm flex items-center gap-2 text-sm whitespace-nowrap"
+                >
+                  <Plus className="w-4 h-4" />
+                  <span>Nuevo Descuento</span>
+                </button>
+              </div>
            </div>
 
            {uploadWarnings.length > 0 && (
@@ -1054,14 +1354,25 @@ export default function LiquidarEvento({ eventos, musicos, selectedEvento, setSe
                      type="text" 
                      value={nuevaColumna.nombre} 
                      onChange={e => setNuevaColumna({...nuevaColumna, nombre: e.target.value})}
-                     className="w-full px-3 py-2 border border-gray-300 rounded-lg outline-none focus:ring-2 focus:ring-purple-500 uppercase"
+                     className="w-full px-3 py-2 border border-gray-300 rounded-lg outline-none focus:ring-2 focus:ring-purple-500 uppercase mb-2"
                      placeholder="Ej: CAMISA, GORRA..."
                      autoFocus
                   />
+                  <div className="flex flex-wrap gap-1 mt-1">
+                    {['TELAS', 'CAMISAS', 'ZAPATOS', 'GUANTES', 'GORRAS', 'VARIOS'].map(sug => (
+                      <button
+                        key={sug}
+                        onClick={() => setNuevaColumna({...nuevaColumna, nombre: sug})}
+                        className="px-2 py-1 bg-purple-50 hover:bg-purple-100 text-purple-700 text-xs font-bold rounded-full transition-colors border border-purple-200"
+                      >
+                        {sug}
+                      </button>
+                    ))}
+                  </div>
                </div>
                <div>
-                  <label className="block text-sm font-bold text-gray-700 mb-1">Monto Total a Pagar (Bs)</label>
-                  <p className="text-[10px] text-gray-500 mb-1 leading-tight">Monto BASE o promedio. (Ej: 1700). Si alguien debe menos porque ya dio un adelanto, no te preocupes, una vez creado el descuento podrás ajustar el valor individualmente.</p>
+                  <label className="block text-sm font-bold text-gray-700 mb-1">Monto (Bs)</label>
+                  <p className="text-[10px] text-gray-500 mb-1 leading-tight">Puedes dejarlo en 0 y ajustar el valor individualmente en la tabla luego.</p>
                   <input 
                      type="number" step="1" min="0" 
                      value={nuevaColumna.monto} 
@@ -1095,6 +1406,15 @@ export default function LiquidarEvento({ eventos, musicos, selectedEvento, setSe
                      </select>
                   )}
                </div>
+
+               {nuevaColumna.nombre && (
+                 <div className="bg-blue-50 border border-blue-200 p-3 rounded-lg text-sm text-blue-800">
+                   <strong>Vista previa:</strong> Se creará la columna <strong>"{nuevaColumna.nombre.toUpperCase()}"</strong> con un descuento de <strong>Bs. {nuevaColumna.monto || '0'}</strong> aplicado a 
+                   {nuevaColumna.aplicarA === 'TODOS' ? ' todos los músicos.' : 
+                    nuevaColumna.aplicarA === 'SECCION' ? ` la sección ${nuevaColumna.seccion}.` : 
+                    nuevaColumna.musico_id ? ' un músico específico.' : ' un músico (seleccione uno).'}
+                 </div>
+               )}
             </div>
 
             <div className="flex gap-3 justify-end mt-6">
