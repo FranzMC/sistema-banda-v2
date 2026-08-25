@@ -555,26 +555,6 @@ export default function LiquidarEvento({ eventos, musicos, selectedEvento, setSe
         ]);
       });
 
-      // Subtotal de sección
-      body.push([
-        { content: '', styles: { fillColor: [235,235,235] } },
-        { content: `SUBTOTAL ${seccion.titulo}`,
-          styles: { halign: 'right', fontStyle: 'bold', fontSize: 7.5, fillColor: [235,235,235] } },
-        { content: subAcordado.toLocaleString('es-BO'),
-          styles: { halign: 'right', fontStyle: 'bold', fontSize: 7.5, fillColor: [235,235,235], textColor: [20,100,20] } },
-        { content: subMultas > 0 ? subMultas.toLocaleString('es-BO') : '—',
-          styles: { halign: 'right', fontStyle: 'bold', fontSize: 7.5, fillColor: [235,235,235], textColor: [160,20,20] } },
-        ...subExtras.map(v => ({
-          content: v > 0 ? v.toLocaleString('es-BO') : '—',
-          styles: { halign: 'right', fontStyle: 'bold', fontSize: 7.5, fillColor: [235,235,235], textColor: [20,60,140] }
-        })),
-        { content: subAdelantos > 0 ? subAdelantos.toLocaleString('es-BO') : '—',
-          styles: { halign: 'right', fontStyle: 'bold', fontSize: 7.5, fillColor: [235,235,235], textColor: [160,80,0] } },
-        { content: subSaldo.toLocaleString('es-BO'),
-          styles: { halign: 'right', fontStyle: 'bold', fontSize: 7.5, fillColor: [235,235,235],
-                    textColor: subSaldo >= 0 ? [20,100,20] : [160,20,20] } },
-        { content: '', styles: { fillColor: [235,235,235] } },
-      ]);
     });
 
     // ── Fila GRAN TOTAL ──────────────────────────────────────────────────────────
@@ -1095,19 +1075,19 @@ export default function LiquidarEvento({ eventos, musicos, selectedEvento, setSe
                  </div>
            )}
             <div className="border border-gray-200 rounded-xl shadow-sm overflow-x-auto overflow-y-auto bg-white" style={{ maxHeight: 'calc(100vh - 8rem)' }}>
-               <table className="w-full min-w-full text-sm text-left table-fixed">
+               <table className="w-full min-w-max text-sm text-left whitespace-nowrap">
                   <thead className="bg-gray-800 text-white sticky top-0 z-20 shadow-md">
                      <tr>
                         <th className="px-4 py-4 font-bold border-b min-w-[200px] uppercase text-xs tracking-wider sticky left-0 top-0 bg-gray-800 z-30 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.3)]">Músico</th>
-                        <th className="px-4 py-4 font-bold border-b text-right w-32 uppercase text-xs tracking-wider text-green-300">TOTAL</th>
-                        <th className="px-4 py-4 font-bold border-b text-right w-28 text-red-300 uppercase text-xs tracking-wider">Descuento</th>
+                        <th className="px-4 py-4 font-bold border-b text-right min-w-[120px] uppercase text-xs tracking-wider text-green-300">TOTAL</th>
+                        <th className="px-4 py-4 font-bold border-b text-right min-w-[120px] text-red-300 uppercase text-xs tracking-wider">Descuento</th>
                         {columnasExtra.map(col => (
-                            <th key={col.id} className="px-2 py-4 font-bold border-b text-right w-28 text-blue-200 uppercase text-xs tracking-wider">
+                            <th key={col.id} className="px-2 py-4 font-bold border-b text-right min-w-[160px] text-blue-200 uppercase text-xs tracking-wider">
                                 <div className="flex items-center justify-end gap-2">
                                    <span className="whitespace-nowrap">- {col.nombre}</span>
                                    <button
                                       onClick={() => handleEliminarColumna(col.id)}
-                                      className="inline-flex items-center justify-center w-7 h-7 rounded-full bg-red-600 text-white hover:bg-red-700 transition-shadow shadow-lg"
+                                      className="inline-flex items-center justify-center w-7 h-7 rounded-full bg-red-600 text-white hover:bg-red-700 transition-shadow shadow-lg shrink-0"
                                       title="Eliminar descuento"
                                    >
                                       <X className="w-4 h-4" />
@@ -1115,9 +1095,9 @@ export default function LiquidarEvento({ eventos, musicos, selectedEvento, setSe
                                 </div>
                             </th>
                         ))}
-                        <th className="px-4 py-4 font-bold border-b text-right w-28 text-orange-300 uppercase text-xs tracking-wider">Adelanto</th>
-                        <th className="px-4 py-4 font-bold border-b text-right w-36 text-white uppercase text-xs tracking-wider">SALDO</th>
-                        <th className="px-4 py-4 font-bold border-b text-center w-28 uppercase text-xs tracking-wider text-green-300">ACCIÓN</th>
+                        <th className="px-4 py-4 font-bold border-b text-right min-w-[120px] text-orange-300 uppercase text-xs tracking-wider">Adelanto</th>
+                        <th className="px-4 py-4 font-bold border-b text-right min-w-[140px] text-white uppercase text-xs tracking-wider">SALDO</th>
+                        <th className="px-4 py-4 font-bold border-b text-center min-w-[120px] uppercase text-xs tracking-wider text-green-300">ACCIÓN</th>
                      </tr>
                   </thead>
                   
